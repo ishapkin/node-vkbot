@@ -1,5 +1,5 @@
-_/
-!_/execute/*.js
+_/*
+!execute/
 node_modules/
 CHANGELOG.md
 TODO.md
