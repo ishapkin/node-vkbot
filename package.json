@@ -1,0 +1,31 @@
+{
+  "name": "vkbot",
+  "version": "0.9.7",
+  "description": "VKontakte chat-bot",
+  "author": "olnaz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/olnaz/node-vkbot.git"
+  },
+  "scripts": {
+    "pm2": "./node_modules/.bin/pm2", 
+    "monit": "pm2 monit", 
+    "logs":  "pm2 logs", 
+    "build": "bash ./build.sh", 
+    "build:test": "bash ./build.sh --test", 
+    "deploy": "bash ./deploy.sh", 
+    "start": "node ./build/main", 
+    "start:debug": "DEBUG=true node ./build/main"
+  },
+  "dependencies": {
+    "async": "^2.0.0-rc.3",
+    "aws4": "^1.4.1",
+    "cheerio": "^0.20.0",
+    "node-vkapi": "^2.0.3",
+    "pm2": "^1.0.0",
+    "request-promise": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  }
+}
