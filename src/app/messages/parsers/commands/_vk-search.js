@@ -12,6 +12,12 @@
  */
 
 /**
+ * Module dependencies
+ * @private
+ */
+const checker = require('./include/checker');
+
+/**
  * Local constants
  * @private
  */
@@ -116,6 +122,15 @@ function processCommand (type, arg, callback) {
         // Ищем gif, но нашелся "левый" документ, пропускаем его
         if (type === 'gif' && current.ext !== 'gif') 
           continue;
+
+        // Проверим, не содержит ли название трека запрещённые слова
+        if (type === 'music') {
+          let fullTitle = current.artist + ' ' + current.title;
+
+          // Название содержит запрещённые слова, ничего не отправляем
+          if (checker(fullTitle)) 
+            return callback(null, 'Название аудиозаписи содержит запрещённые слова.');
+        }
 
         // Добавляем элемент в новый массив
         attachItems.push(typeObject.attach + current.owner_id + '_' + current.id);

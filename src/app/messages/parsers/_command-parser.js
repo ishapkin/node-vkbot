@@ -85,7 +85,7 @@ function commandParser (messageObj) {
       };
 
       // Указываем, в каких командах удалять ссылки
-      if (~['hf', 'who'].indexOf(cmdToUse.command)) 
+      if (~['hf', 'joke', 'who'].indexOf(cmdToUse.command)) 
         returnObject.replaceUrls = true;
 
       // Ошибок нет. Возвращаем результат работы.

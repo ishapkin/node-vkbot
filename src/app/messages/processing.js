@@ -8,8 +8,9 @@
  * Module dependencies
  * @private
  */
-const apply = require('./applying');
-const debug = require('../../lib/simple-debug')(__filename);
+const apply       = require('./applying');
+const debug       = require('../../lib/simple-debug')(__filename);
+const replaceUrls = require('./parsers/commands/include/replacer');
 
 /**
  * Обработка и помещение сообщения в очередь
@@ -287,74 +288,6 @@ function makeMessageObject (beforeProcessing, afterProcessing) {
     attachment: _attachments, 
     forward_messages: _forwards
   };
-}
-
-/**
- * Удаляет ссылки из сообщения, а также слова, за которые ВКонтакте банит.
- * @param  {String} message  Сообщение
- * @return {String}          Обработанное сообщение
- * @private
- */
-const REPLACES = {
-  // EN -> RU
-  'a': 'а', 
-  'c': 'с', 
-  'e': 'е', 
-  'o': 'о', 
-  'p': 'р', 
-  'x': 'х', 
-
-  // RU -> EN
-  'а': 'a', 
-  'е': 'e', 
-  'о': 'o', 
-  'р': 'p', 
-  'с': 'c', 
-  'х': 'x'
-};
-const STOP_WORD_REPLACES = {
-  vkway: 'вквэй', 
-  vkbot: 'вкбот', 
-  vtope: 'втопе'
-};
-
-// Регулярка, которая матчит самые популярные домены (и не только)
-const regExpression   = /\.(?:[a-gik-pr-uwxмор][ac-gi-su-yоруф][a-gk-mr-tvxzгс]?[acehiosuvк]?[einoyв]?[etwа]?e?)/gmi;
-
-// "Стоп-слова"
-const stopWordsRegExp = /vkway|vkbot|vtope/gmi;
-
-function replaceUrls (message) {
-  // Очищаем сообщение от ссылок
-  let cleanMessage  = message.replace(regExpression, match => `.${'*'.repeat(match.length - 1)}`);
-
-  // В случайном порядке заменяем похожие русские буквы английскими и наоборот
-  cleanMessage      = cleanMessage.replace(/.{1}/gmi, letter => {
-    // Рандом решил, что букву менять не будем
-    if (Math.random() < 0.5) 
-      return letter;
-
-    // Приведём букву к нижнему регистру
-    let letterLowercased = letter.toLowerCase();
-
-    // Похожая буква есть
-    if (REPLACES[letterLowercased] !== undefined) {
-      // Выясним, в каком регистре буква
-      let isLetterLowercased = letter === letterLowercased;
-
-      // Вернём "иностранного клона"
-      return isLetterLowercased ? REPLACES[letterLowercased] : REPLACES[letterLowercased].toUpperCase();
-    }
-
-    // Похожей буквы нет, поэтому вернём то, что и было
-    return letter;
-  });
-
-  // Заменяем "стоп-слова", если они есть
-  if (stopWordsRegExp.test(cleanMessage)) 
-    cleanMessage = cleanMessage.replace(stopWordsRegExp, match => STOP_WORD_REPLACES[match]);
-
-  return cleanMessage;
 }
 
 module.exports = processUpdates;

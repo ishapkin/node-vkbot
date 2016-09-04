@@ -6,6 +6,7 @@
  */
 const prequest = require('request-promise');
 const parsers  = require('./include/parsers');
+const replacer = require('./include/replacer');
 
 /**
  * Local constants
@@ -56,10 +57,11 @@ function run (arg, callback) {
   })
   .then(parsed => {
     let link = parsed.link;
+    let text = replacer(parsed.text);
 
     // Ссылки нет, проверять нечего
     if (link.length === 0) 
-      return parsed.text;
+      return text;
 
     // Проверим, не заблокирована ли ссылка во ВКонтакте
     return VK.call('utils.checkLink', {
@@ -68,7 +70,7 @@ function run (arg, callback) {
       .then(response => {
         if (response.status === 'not_banned') 
           // Ссылка не заблокирована. Возвращаем текст с ссылкой
-          return parsed.text + '\n' + link;
+          return text + '\n' + link;
         else
           // Ссылка заблокирована или ещё не проверена
           return 'Найденный по вашему запросу сайт заблокирован во ВКонтакте.';
