@@ -7,7 +7,7 @@
 const search = require('./_vk-search.js');
 
 module.exports = {
-  enabled: false, 
+  enabled: true, 
   unique:  false, 
   mask: 0, 
 
