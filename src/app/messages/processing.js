@@ -65,7 +65,7 @@ function processUpdates (item) {
       if (messToSend !== null) {
         // Сообщения от админов, модеров и випов обрабатываются в первую очередь
         if (messageObjectMiddlewared.permissionsMask >= 1) 
-          this.__queue.enqueueTo(Math.abs(messageObjectMiddlewared.permissionsMask - 5), messToSend, messageObjectMiddlewared.chatId);
+          this.__queue.enqueueTo(Math.abs(messageObjectMiddlewared.permissionsMask - 4), messToSend, messageObjectMiddlewared.chatId);
         else 
           this.__queue.enqueue(messToSend, messageObjectMiddlewared.chatId);
       }
