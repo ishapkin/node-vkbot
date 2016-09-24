@@ -7,7 +7,7 @@
  * 0 - простой юзер
  * 1 - пригласивший бота
  * 2 - создатель беседы
- * 3 - вип
+ * 3 - VIP
  * 4 - админ
  */
 
@@ -16,24 +16,34 @@
  * @private
  */
 const admins = require('../../../data/admins');
-const vips   = require('../../../data/vips');
 
-module.exports = messageObj => {
+/**
+ * Middleware function
+ * @param  {Object} messageObj Объект сообщения
+ * @return {Object}            Добавляемое свойство
+ * @public
+ */
+function middleware (messageObj) {
+  // Получаем список VIP-пользователей для текущего бота
+  const vips          = require('../../../data/vips/' + messageObj.botId);
   let permissionsMask = 0;
+  let currentChatUser = messageObj.chatUsers && messageObj.chatUsers[messageObj.fromId];
 
-  if (messageObj.chatUsers && messageObj.chatUsers[messageObj.fromId]) {
-    let currentChatUser = messageObj.chatUsers[messageObj.fromId];
-
+  if (currentChatUser) {
+    // Пригласивший бота
     if (currentChatUser.botInviter) 
       permissionsMask = 1;
 
+    // Создатель беседы
     if (currentChatUser.chatAdmin) 
       permissionsMask = 2;
   }
 
-  if (vips[messageObj.botId] && (vips[messageObj.botId] === true || ~vips[messageObj.botId].indexOf(messageObj.fromId))) 
+  // VIP-пользователь
+  if (~vips.indexOf(messageObj.fromId)) 
     permissionsMask = 3;
 
+  // Администратор
   if (~admins.indexOf(messageObj.fromId)) 
     permissionsMask = 4;
 
@@ -41,3 +51,5 @@ module.exports = messageObj => {
     permissionsMask
   }
 }
+
+module.exports = middleware;
