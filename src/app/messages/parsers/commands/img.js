@@ -99,9 +99,9 @@ function run (arg, callback) {
 }
 
 module.exports = {
-  enabled: false, 
+  enabled: true, 
   unique:  false, 
-  mask: 0, 
+  mask: 3, 
 
   aliases:     ['картинка'], 
   description: 'Осуществляет поиск изображния в Google.', 
