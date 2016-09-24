@@ -1,21 +1,22 @@
 'use strict';
 
 /**
- * Авторизация бота и инициализация экземпляра приложения с ним
+ * Авторизация бота и инициализация экземпляра приложения с ним.
  */
 
 /**
- * Module dependencies
+ * Module dependencies.
  * @private
  */
-const Application = require('../');
 const config      = require('../../../config');
 const debug       = require('../../../lib/simple-debug')(__filename);
+const Bot         = require('../../bot/Bot');
 const getCommands = require('./get-commands');
-const fs          = require('fs');
 const VKApi       = require('node-vkapi');
+const fs          = require('fs');
 
 /**
+ * Init function.
  * @param  {Object}  options.auth
  *         @property {String} login Логин
  *         @property {String} phone Телефон
@@ -31,7 +32,7 @@ function init ({ auth, id, _cond }) {
    * где result - экземпляр приложения бота.
    */
   return function (callback) {
-    debug.out(`= Creating instance for bot "id${id}"`);
+    debug.out(`= Creating instance for Bot[id${id}]`);
 
     /**
      * 1. Получаем список команд для бота
@@ -58,7 +59,7 @@ function init ({ auth, id, _cond }) {
       if (tokens[id]) {
         debug.out('+ Token is exist. Returning the instance');
 
-        return callback(null, new Application({
+        return callback(null, new Bot({
           id, 
           commands, 
           condition: _cond, 
@@ -73,7 +74,7 @@ function init ({ auth, id, _cond }) {
     VK.auth.user({ scope: 'all' })
       .then(tokenObject => {
         // Если были какие-либо сохранённые токены, то добавляем к ним 
-        // только что полученный новый.
+        // только что полученный новый. 
         // Если не было, то сохраняем только новый.
         if (tokens) {
           tokens[id] = tokenObject.access_token;
@@ -88,10 +89,10 @@ function init ({ auth, id, _cond }) {
         // Сохраняем обновлённый список токенов
         fs.writeFileSync('./tokens.json', JSON.stringify(tokens));
 
-        debug.out('+ Tokens were saved. Returning the instance');
+        debug.out('+ Token was saved. Returning the instance');
 
         // Возвращаем экземпляр
-        return callback(null, new Application({
+        return callback(null, new Bot({
           id, 
           commands, 
           condition: _cond, 
@@ -99,7 +100,7 @@ function init ({ auth, id, _cond }) {
         }));
       })
       .catch(error => {
-        debug.err(`- Error was occured during creating an instance for bot "id${id}`);
+        debug.err(`- Error has occurred during creating an instance for Bot[id${id}]`);
         debug.err(error.stack || error);
 
         return callback(error);

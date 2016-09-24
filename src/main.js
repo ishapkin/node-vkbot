@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Запуск pm2-демона и добавление процессов в него
  */
@@ -16,7 +18,7 @@ const async = require('async');
  * @private
  */
 function startWrapper (arrOfStartOpts) {
-  return arrOfStartOpts.map(v => (cb => pm2.start(v, cb)));
+  return arrOfStartOpts.map(value => (callback => pm2.start(value, callback)));
 }
 
 // Подключаемся к демону
@@ -54,9 +56,10 @@ pm2.connect(error => {
       }
     ]), 
     function (error, results) {
+      // При запуске процессов возникли ошибки
       if (error) {
         console.error(error);
-        process.exit(2);
+        process.exit(1);
       }
 
       console.log('All processes were successfully started!');

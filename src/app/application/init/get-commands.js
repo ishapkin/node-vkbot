@@ -12,7 +12,7 @@ const fs   = require('fs');
 const path = require('path');
 
 /**
- * Возвращает объект { <Команда>: { <Объект команды> } }
+ * Возвращает объект { <Команда_1>: <Объект команды 1>, ..., <Команда_N>: <Объект команды N> }
  * @param  {String} dir Название папки, где находятся команды
  * @private
  */
@@ -28,7 +28,7 @@ function getCommandFiles (dir) {
       continue;
 
     let filename = current.slice(0, -3);
-    let file = require(path.join(cmdPath, filename));
+    let file     = require(path.join(cmdPath, filename));
 
     output[filename] = file;
   }
@@ -47,7 +47,7 @@ function filterCommands (cmdObject) {
    * Формат записи данных:
    *   {
    *     command: <Название команды>, 
-   *     <Объект, возвращаемый из файла команды> (aliases, unique, run, description, use, mask)
+   *     <...свойства объекта команды> (aliases, unique, run, description, use, mask)
    *   }
    */
   let output = [];
@@ -68,13 +68,13 @@ function filterCommands (cmdObject) {
 }
 
 /**
- * Возвращает массив команд для текущего бота
+ * Возвращает массив команд для текущего бота. 
  * @param  {Number} botId ID бота
  * @return {Array}
  * @public
  */
 function getCommands (botId) {
-  let commands_    = filterCommands(getCommandFiles('commands'));
+  let commands_ = filterCommands(getCommandFiles('commands'));
   // let exclusive_ = filterCommands(getCommandFiles('commands-exclusive/' + botId));
   // commands_ = commands_.concat(exclusive_);
 
