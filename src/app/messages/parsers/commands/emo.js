@@ -65,7 +65,7 @@ function run (arg, callback) {
     // Обрабатываем полученный от сервиса ответ
     .then(response => {
       // Пустой ответ => лица не обнаружены
-      if (!response) 
+      if (!response || !response[0]) 
         return callback(null, 'Не удалось обнаружить лицо на фотографии.');
 
       let textToSend = '';
