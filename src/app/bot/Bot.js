@@ -5,13 +5,13 @@
  * @private
  */
 const config   = require('../../config');
-const Messages = require('../messages');
+const Messages = require('../messages/Messages');
 const VKApi    = require('node-vkapi');
 
 /**
- * Application main class
+ * Bot main class
  */
-class Application {
+class Bot {
   constructor ({ id, token, condition, commands }) {
     // ID бота
     this._botId = parseInt(id);
@@ -19,7 +19,7 @@ class Application {
     // Список всех команд текущего бота
     this._commands = commands;
 
-    // Условие добавления
+    // Условие добавления бота в друзья
     this._cond = condition;
 
     // Класс для работы с сообщениями
@@ -39,6 +39,7 @@ class Application {
    * 1. Удаляются исходящие заявки
    * 2. Обновляется статус активности
    *
+   * @param {Boolean} firstTimeStart Первый запуск? - true
    * @private
    */
   _friendsLoop (firstTimeStart) {
@@ -50,7 +51,7 @@ class Application {
   }
 
   /**
-   * Запускает приложение
+   * Запускает текущего бота
    * @public
    */
   start () {
@@ -62,13 +63,15 @@ class Application {
    * Устанавливает статус "Оффлайн" боту, а также выходит из ВКонтакте
    * @public
    */
-  shutdown () {
-    return this._setStatusAndGetData('off');
+  shutdown (callback) {
+    return this._setStatusAndGetData('off')
+      .then(() => callback && callback())
+      .catch(() => callback && callback());
   }
 
   /**
    * Изменяет статус бота и добавляет в друзья пользователей
-   * @param  {String} status on/off
+   * @param  {String} status 'on' or 'off'
    * @private
    */
   _setStatusAndGetData (status) {
@@ -81,4 +84,4 @@ class Application {
   }
 }
 
-module.exports = Application;
+module.exports = Bot;
