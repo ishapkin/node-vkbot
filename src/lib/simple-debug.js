@@ -7,9 +7,9 @@
 const DEBUG_ACTIVE = process.env.DEBUG;
 
 function log (text, path, isError) {
-  let date = (new Date).toTimeString().split(' ')[0];
+  let date = (new Date()).toLocaleString('ru');
 
-  return console[isError && 'error' || 'log'](`[${date}][${path}]`, text);
+  return console[isError && 'error' || 'log'](`[${date}][${path}]`, text, '\n\n');
 }
 
 function wrapper (absolutePath) {
