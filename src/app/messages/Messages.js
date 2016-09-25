@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Базовый класс для работы с сообщениями
+ * Базовый класс для работы с сообщениями.
  */
 
 /**
@@ -81,16 +81,58 @@ function chatUsersArrayToObj (array, botId) {
  */
 class Messages {
   constructor (parent) {
-    this.parent = parent; // Ссылка на Application
+    // Ссылка на экземпляр класса Bot
+    this.parent = parent;
 
-    this.LongPolling = new LongPolling(this);
+    // Класс для работы с очередью сообщений
+    this.Queue = new Queue();
 
-    this.__queue = new Queue();
-    this.__state = {
-      botsInChat: {}, // chat-id: Checking Date.now()
-      chatUsers: {}, // chat-id: chat users Object { user-id: { firstName, lastName, <...> } }
-      lastMessage: {} // dialog-id: message String (last message was sent by user)
-    }
+    /**
+     * Класс для работы с LongPoll подключением
+     * @private
+     */
+    this._LongPolling = new LongPolling(this);
+
+    /**
+     * Информация о диалогах. 
+     *
+     * Формат записи свойств:
+     *   <chat_id>: {
+     *     users:            [users_object], 
+     *     mode:             [chat_mode],
+     *     botsCheckingTime: [bots_checking], 
+     *     lastMessage:      String, 
+     *     [_votes] (/vote)
+     *   }
+     *
+     * [users_object] Object (undefined for personal chats) {
+     *   <user_id>: {
+     *     firstName:    String, 
+     *     lastName:     String, 
+     *     chatAdmin:    Boolean, 
+     *     botInviter:   Boolean, 
+     *     invitedByBot: Boolean
+     *   }
+     * } or null if bot has leaved by himself
+     *
+     * [chat_mode] String (undefined for personal chats)
+     *   undefined or 'default' : default chat mode
+     *   'vote'                 : voting mode (/vote)
+     *
+     * [bots_checking] Number (undefined for personal chats)
+     * 
+     * @private
+     */
+    this._conversations = new Proxy({}, {
+      // Перехватываем обращение к несуществующему свойству 
+      // "prop", где prop = chat_id
+      get: function (target, prop) {
+        if (target[prop] === undefined) 
+          target[prop] = {};
+        
+        return target[prop];
+      }
+    });
   }
 
   /**
@@ -105,20 +147,20 @@ class Messages {
         // Бота уже нет в беседе. Очищаем информацию о чате
         if (res.length === 0) {
           // 1. Удаляем список участников
-          delete this.__state.chatUsers[chat_id];
+          delete this._conversations[chat_id].users;
 
           // 2. Удаляем сообщения в этот чат из очереди
           // В случае, если бота кикнули (это отследить можно только проверив res.length === 0), 
           // то сообщение в любом случае не отправится. Даже если оно не удалится из очереди.
           // Но, на всякий случай, сообщения всё-таки удаляются, дабы очистить очередь.
-          this.__queue.clear(chat_id);
+          this.Queue.clear(chat_id);
 
           return;
         }
 
         let chatUsers = chatUsersArrayToObj(res, this.parent._botId);
 
-        this.__state.chatUsers[chat_id] = chatUsers;
+        this._conversations[chat_id].users = chatUsers;
       })
       .catch(err => {
         debug.err('Error in _updateChatComp');
@@ -136,7 +178,7 @@ class Messages {
   _updatesLoop () {
     // Установим обработчик на событие "updates". 
     // Массивы обновлений из LongPolling попадают сюда
-    this.LongPolling.on('updates', updatesArray => {
+    this._LongPolling.on('updates', updatesArray => {
       // Пробегаемся по массиву обновлений и обрабатываем сообщения
       for (let i = 0, len = updatesArray.length; i < len; i++) {
         let current = updatesArray[i];
@@ -144,7 +186,7 @@ class Messages {
         // Значение 51 в нулевом элементе массива свидетельствует о том, 
         // что информация беседы была изменена. Поэтому обновляем 
         // список участников текущей беседы
-        if (current[0] === 51 && this.__state.chatUsers[current[1]]) 
+        if (current[0] === 51 && this._conversations[current[1]].users) 
           this._updateChatComp(parseInt(current[1]));
 
         // Значение 4 в нулевом элементе массива -> пришло новое сообщение. 
@@ -157,7 +199,7 @@ class Messages {
     debug.out('+ LongPolling listener was set');
 
     // Подключаемся к LongPoll серверу и проверяем обновления
-    this.LongPolling.check();
+    this._LongPolling.check();
 
     debug.out('+ LongPolling checking was started');
   }
@@ -168,17 +210,17 @@ class Messages {
    * @private
    */
   _queueLoop () {
-    let queue = this.__queue;
+    let queue = this.Queue;
 
     if (!queue.isEmpty()) {
       let message = queue.dequeue();
 
       // Если список юзеров === null, значит, бот ушёл сам из чата chat_id
       // В таком случае, сообщение не отправляем
-      if (message && message.chat_id && this.__state.chatUsers[message.chat_id] === null) 
+      if (message && message.chat_id && this._conversations[message.chat_id].users === null) 
         message = null;
 
-      return this.send(message)
+      return this._send(message)
         .then(() => setTimeout(() => this._queueLoop(), config.messages.delay))
         .catch(error => {
           debug.err('- Error in Messages._queueLoop()');
@@ -192,11 +234,12 @@ class Messages {
   }
 
   /**
-   * Отправляет сообщения во ВКонтакте
+   * Отправляет сообщения во ВКонтакте.
    * @param  {Object} messageObj Объект сообщения
-   * @return {Prosmie}
+   * @return {Promise}
+   * @private
    */
-  send (messageObj) {
+  _send (messageObj) {
     if (messageObj === null) 
       return Promise.resolve();
 
@@ -206,12 +249,31 @@ class Messages {
         if (error.name === 'VKApiError' && error.code === 9) {
           messageObj.message = messageObj.message + ' 😊';
 
-          return this.send(messageObj);
+          return this._send(messageObj);
         }
 
         debug.err('- Error in Messages.send()');
         debug.err(error);
       });
+  }
+
+  /**
+   * Устанавливает режим беседы.
+   * @param {String} mode Режим
+   * @public
+   */
+  setChatMode (chatId, mode) {
+    this._conversations[chatId].mode = mode;
+  }
+
+  /**
+   * Возвращает значение режима беседы.
+   * @param  {Number} chatId ID беседы
+   * @return {String}
+   * @public
+   */
+  getChatMode (chatId) {
+    return this._conversations[chatId].mode;
   }
 
   /**

@@ -18,7 +18,7 @@ const replaceUrls = require('./parsers/commands/include/replacer');
  * @return {Promise}
  * @public
  *
- * Функции передаётся контекст (this) класса Messages (./index.js)
+ * Функции передаётся контекст (this) класса Messages (./Messages.js)
  */
 function processUpdates (item) {
   let messageObject = assembleMessage.call(this, item);
@@ -28,6 +28,13 @@ function processUpdates (item) {
   // либо его прислал в беседу заблокированный пользователь
   if (messageObject === null) 
     return null;
+
+  let chatMode = this.getChatMode(messageObject.chatId);
+
+  // Режим беседы отличен от 'default' (или undefined). 
+  // Делегируем дальнейшую обработку сообщения другому обработчику
+  if (chatMode && chatMode !== 'default') 
+    return (require('./chat-modes/' + chatMode)).call(this, messageObject);
 
   // 1. Применяем мидлвэйры
   // 2. Проверяем, всё ли ок (есть ли боты в беседе)
@@ -65,9 +72,9 @@ function processUpdates (item) {
       if (messToSend !== null) {
         // Сообщения от админов, модеров и випов обрабатываются в первую очередь
         if (messageObjectMiddlewared.permissionsMask >= 1) 
-          this.__queue.enqueueTo(Math.abs(messageObjectMiddlewared.permissionsMask - 4), messToSend, messageObjectMiddlewared.chatId);
+          this.Queue.enqueueTo(Math.abs(messageObjectMiddlewared.permissionsMask - 4), messToSend, messageObjectMiddlewared.chatId);
         else 
-          this.__queue.enqueue(messToSend, messageObjectMiddlewared.chatId);
+          this.Queue.enqueue(messToSend, messageObjectMiddlewared.chatId);
       }
     })
     .catch(error => {
@@ -81,7 +88,7 @@ function processUpdates (item) {
  * @param  {Array}    item      Элемент массива обновлений.
  * @private
  * 
- * Функции передаётся контекст (this) класса Messages (./index.js)
+ * Функции передаётся контекст (this) класса Messages (./Messages.js)
  */
 function assembleMessage (item) {
   /**
@@ -115,10 +122,10 @@ function assembleMessage (item) {
   let fromId = isMultichat ? mchatFromId : convId;
 
   // Предыдущее сообщение в данном диалоге
-  let prevMessage = (this.__state.lastMessage[dialogId] || '').toLowerCase();
+  let prevMessage = (this._conversations[dialogId].lastMessage || '').toLowerCase();
 
   // Участники этой беседы ещё не были загружены, поэтому получим их прямо сейчас
-  if (isMultichat && !this.__state.chatUsers[mchatId]) 
+  if (isMultichat && !this._conversations[mchatId].users) 
     this._updateChatComp(mchatId);
 
   // Не обрабатываем сообщение, если оно идентично предыдущему
@@ -126,7 +133,7 @@ function assembleMessage (item) {
     return null;
 
   // Сохраняем последнее сообщение в диалоге
-  this.__state.lastMessage[dialogId] = message;
+  this._conversations[dialogId].lastMessage = message;
 
   // Объект сообщения (для использования в парсерах, миддлвэйрах и командах)
   let messToParse = {
@@ -134,7 +141,7 @@ function assembleMessage (item) {
     attachments, 
     botId: this.parent._botId, 
     chatId: dialogId, 
-    chatUsers: isMultichat && this.__state.chatUsers[mchatId] || null, 
+    chatUsers: isMultichat && this._conversations[mchatId].users || null, 
     fromId, 
     isMultichat, 
     message, 
@@ -150,7 +157,7 @@ function assembleMessage (item) {
  * @return {Promise}
  * @private
  *
- * Функции передаётся контекст (this) класса Messages (./index.js).
+ * Функции передаётся контекст (this) класса Messages (./Messages.js).
  */
 function checking (messageObj) {
   return Promise.resolve()
@@ -164,7 +171,7 @@ function checking (messageObj) {
         let botIds = messageObj.botsInChat;
 
         // Дата обнаружения ботов
-        let checkingDate = this.__state.botsInChat[messageObj.chatId];
+        let checkingDate = this._conversations[messageObj.chatId].botsCheckingTime;
 
         // Если === true, значит в чате есть ещё наши боты => выходим.
         // Для этого установим старую дату, чтобы бот моментально вышел
@@ -177,7 +184,7 @@ function checking (messageObj) {
 
           // Прошло более 3-х минут
           if ((now - checkingDate) > 3*60*1000) {
-            delete this.__state.botsInChat[messageObj.chatId];
+            delete this._conversations[messageObj.chatId].botsCheckingTime;
 
             // Выходим из беседы
             return this.parent.VKApi.call('messages.removeChatUser', {
@@ -186,7 +193,7 @@ function checking (messageObj) {
               })
               .then(() => {
                 // Присваиваем null, т.к. бот вышел сам
-                this.__state.chatUsers[messageObj.chatId] = null;
+                this._conversations[messageObj.chatId].users = null;
 
                 // Возвращаем null, чтобы в очередь ничего не помещалось
                 return null;
@@ -198,7 +205,7 @@ function checking (messageObj) {
         } else {
           // Дата не была ранее установлена. Боты только что обнаружены. 
           // Устанавливаем дату и выводим предупреждение
-          this.__state.botsInChat[messageObj.chatId] = Date.now();
+          this._conversations[messageObj.chatId].botsCheckingTime = Date.now();
 
           return {
             apply: false, 
@@ -216,8 +223,8 @@ function checking (messageObj) {
 
       // Ботов в чате нет, но дата была ранее установлена. Значит, боты были кикнуты. 
       // Выводим сообщение о том, что теперь всё хорошо, а также удаляем установленную дату
-      if (messageObj.botsInChat === null && this.__state.botsInChat[messageObj.chatId] !== undefined) {
-        delete this.__state.botsInChat[messageObj.chatId];
+      if (messageObj.botsInChat === null && this._conversations[messageObj.chatId].botsCheckingTime !== undefined) {
+        delete this._conversations[messageObj.chatId].botsCheckingTime;
 
         return {
           apply: false, 
