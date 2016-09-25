@@ -44,7 +44,7 @@ pm2.connect(error => {
       // Приложение
       {
         name: 'app', 
-        script: './app', 
+        script: './app/main.js', 
         cwd: __dirname, 
         env: {
           "DEBUG": process.env.DEBUG
