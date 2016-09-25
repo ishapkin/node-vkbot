@@ -22,7 +22,7 @@ function run (arg, callback) {
     .then(() => {
       // Присваиваем null, т.к. бот вышел сам. 
       // this = Application
-      this.Messages.__state.chatUsers[argObj.chatId] = null;
+      this.Messages._conversations[argObj.chatId].users = null;
 
       // Ничего не отправляем
       return callback(null);
