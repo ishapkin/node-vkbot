@@ -53,9 +53,9 @@ function save () {
     BotInstances[keys[i]].shutdown();
 
     // Сохраним некоторые важные данные
-    // Messages.__state.chatUsers (участники бесед)
-    let chatUsers = BotInstances[keys[i]].Messages.__state.chatUsers;
-    fs.writeFileSync(`./data/temp/${botId}_chat-users.json`, JSON.stringify(chatUsers));
+    // Messages._conversations (участники бесед)
+    let conversations = BotInstances[keys[i]].Messages._conversations;
+    fs.writeFileSync(`./data/temp/${botId}_conversations.json`, JSON.stringify(conversations));
   }
 
   debug.out('+ All bots were turned off');
@@ -88,9 +88,9 @@ async.series(
       BotInstances[botId] = results[i];
 
       // Восстанавливаем список участников беседы, если он был сохранён.
-      let chatUsersPath = `./data/temp/${botId}_chat-users`;
-      if (isFileExist(chatUsersPath + '.json')) 
-        BotInstances[botId].Messages.__state.chatUsers = require('.' + chatUsersPath);
+      let conversationsPath = `./data/temp/${botId}_conversations`;
+      if (isFileExist(conversationsPath + '.json')) 
+        BotInstances[botId].Messages._conversations = require('.' + conversationsPath);
 
       // Запускаем бота
       BotInstances[botId].start();
