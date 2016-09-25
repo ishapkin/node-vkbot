@@ -39,7 +39,7 @@ function init ({ auth, id, _cond }) {
      */
     debug.out('= 1. Getting commands');
 
-    let commands = getCommands(id);
+    let commands = getCommands({ id });
 
     /**
      * 2. Получаем токен для бота

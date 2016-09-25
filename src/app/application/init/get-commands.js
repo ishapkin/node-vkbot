@@ -73,12 +73,12 @@ function filterCommands (cmdObject) {
  * @return {Array}
  * @public
  */
-function getCommands (botId) {
+function getCommands ({ id/*, exclusiveOnly*/ }) {
   let commands_ = filterCommands(getCommandFiles('commands'));
   // let exclusive_ = filterCommands(getCommandFiles('commands-exclusive/' + botId));
   // commands_ = commands_.concat(exclusive_);
 
-  return commands_;
+  return /*exclusiveOnly ? exclusive_ : */commands_;
 }
 
 module.exports = getCommands;
