@@ -48,7 +48,7 @@ function parser (messageObj) {
         let lineToLog = (isUserVip ? '[+]' : '[-]') + ` ${(new Date()).toLocaleString('ru')} - ${userId}-${botId}:${amount}${currency}\n`;
 
         // Логгируем информацию о переводе
-        fs.writeFile('./logs/money-transfers.txt', lineToLog, { flag: 'a' }. function (error) {
+        fs.writeFile('./logs/money-transfers.txt', lineToLog, { flag: 'a' }, function (error) {
           if (error) 
             debug.err(lineToLog);
 
