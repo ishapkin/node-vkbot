@@ -34,7 +34,7 @@ class Queue {
      * 
      * Только для сообщений без прикреплений 
      */
-    if (message.attachment.length === 0) {
+    if (!message.attachment || message.attachment.length === 0) {
       // Пробегаемся по очереди и находим нужный chatId
       for (let i = 0, len = this.queue.length; i < len; i++) {
         // Нашли. То, что надо!
@@ -72,7 +72,7 @@ class Queue {
      *
      * Случай с прикрплениями аналогичный функции this.enqeque()
      */
-    if (message.attachment.length === 0) {
+    if (!message.attachment || message.attachment.length === 0) {
       let len = index < this.queue.length ? index + 1 : this.queue.length;
       for (let i = 0; i < len; i++) {
         if (this.queue[i] && this.queue[i][0] === chatId && this.queue[i][1].attachment.length === 0) {
