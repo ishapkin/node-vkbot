@@ -1,5 +1,6 @@
 _/*
 !execute/
+!utilites/
 build/
 node_modules/
 CHANGELOG.md
