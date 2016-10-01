@@ -15,7 +15,7 @@ EOF
 
 echo 'Copying files to remote host';
 (
-  rsync -ar ./build/ $HOST:~/vkbot/
+  rsync -ar ./build $HOST:~/vkbot/
   rsync -ar ./node_modules $HOST:~/vkbot/
 ) || (echo '# Failed' && exit 1);
 
