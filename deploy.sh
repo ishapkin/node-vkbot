@@ -21,5 +21,5 @@ echo 'Copying files to remote host';
 
 echo 'Starting the application';
 ssh $HOST /bin/bash << EOF
-  cd ./vkbot && node main && echo '# Started' || echo '# Not started';
+  cd ./vkbot && node ./build/main && echo '# Started' || echo '# Not started';
 EOF
