@@ -2,6 +2,7 @@
 
 const parsers     = require('./parsers');
 const middlewares = require('./middlewares');
+const debug       = require('../../lib/simple-debug')(__filename);
 
 /**
  * Применение подходящего парсера к сообщению
@@ -39,6 +40,8 @@ function parser (messageObj) {
     // Удостоверимся в наличии функции парсера
     if (parserToUse === undefined) 
       return resolve(null);
+
+    debug.out('= Parser used', parserToUse.name);
 
     // Применяем парсер к сообщению
     return parserToUse(res => resolve(res));

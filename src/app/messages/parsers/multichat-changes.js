@@ -20,6 +20,8 @@ const MESSAGE = `Привет!
 module.exports = function (messageObj) {
   return {
     cond: (messageObj.attachments.source_act === 'chat_invite_user' && parseInt(messageObj.attachments.source_mid) === messageObj.botId) || messageObj.attachments.source_act === 'chat_create', 
-    fn: cb => cb(MESSAGE)
+    fn: function multichatChangesParser (cb) {
+      return cb(MESSAGE);
+    }
   }
 }

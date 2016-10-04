@@ -43,7 +43,7 @@ module.exports = function (messageObj) {
     cond: isMultichat ? botPattern.test(messageObj.message) : true, 
     priority: 0, 
 
-    fn: cb => {
+    fn: function appealParser (cb) {
       let message = messageObj.message;
 
       /**

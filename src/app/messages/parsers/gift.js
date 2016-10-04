@@ -8,6 +8,8 @@
 module.exports = function (messageObj) {
   return {
     cond: messageObj.attachments.attach1_type === 'gift', 
-    fn: cb => cb('Спасибо за подарок, дружище! :-) :-*')
+    fn: function giftParser (cb) {
+      return cb('Спасибо за подарок, дружище! :-) :-*');
+    }
   }
 }
