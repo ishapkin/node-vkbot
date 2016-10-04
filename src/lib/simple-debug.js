@@ -6,19 +6,22 @@
 
 const DEBUG_ACTIVE = process.env.DEBUG;
 
-function log (text, path, isError) {
-  let date = (new Date()).toLocaleString('ru');
-
-  return console[isError && 'error' || 'log'](`[${date}][${path}]`, text, '\n\n');
-}
-
-function wrapper (absolutePath) {
-  let path = absolutePath.split('/').slice(-2).join('/');
+/**
+ * Logger function
+ * @param  {String} absolutePath Полный путь к файлу, в котором была вызвана функция
+ * @return {Object}
+ * @public
+ */
+function logger (absolutePath) {
+  // Приводим все пути к формату: directory/filename.js
+  let path   = absolutePath.split('/').slice(-2).join('/');
+  let date   = (new Date()).toLocaleString('ru');
+  let prefix = `[${date}][${path}]`;
 
   return {
-    err: text => log(text, path, true), 
-    out: text => DEBUG_ACTIVE ? log(text, path) : null
+    err: (...args) => console.error(prefix, ...args, '\n'), 
+    out: (...args) => DEBUG_ACTIVE ? console.log(prefix, ...args, '\n') : null
   }
 }
 
-module.exports = wrapper;
+module.exports = logger;
