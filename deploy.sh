@@ -4,8 +4,8 @@
 HOST="$1"
 
 echo 'Backup folders "data/vips" and "logs"';
-rsync -ar $HOST:~/vkbot/logs ./_/backup;
-rsync -ar $HOST:~/vkbot/data/vips ./_/backup;
+rsync -ar $HOST:~/vkbot/build/logs ./_/backup;
+rsync -ar $HOST:~/vkbot/build/data/vips ./_/backup;
 
 echo 'Turning bots off';
 ssh $HOST /bin/bash << EOF
