@@ -43,7 +43,7 @@ function run (arg, callback) {
     for (let i = 0, keys = Object.keys(results), len = keys.length; i < len; i++) {
       let current = results[keys[i]];
 
-      votes[current - 1]   = (votes[current - 1] || 0) + 1;
+      votes[current - 1] = (votes[current - 1] || 0) + 1;
       votesCount += 1;
     }
 
@@ -83,7 +83,7 @@ function run (arg, callback) {
 module.exports = {
   enabled: true, 
   unique:  'mchat', 
-  mask: 1, 
+  mask: 3, 
 
   aliases:     ['голосование'], 
   description: 'Позволяет провести голосование прямо в беседе.', 
