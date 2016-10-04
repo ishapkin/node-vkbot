@@ -30,7 +30,7 @@ function parser (messageObj) {
 
   return {
     cond: attachments.attach1_type === 'money_transfer', 
-    fn: function (callback) {
+    fn: function moneyParser (callback) {
       // <from_id>_<to_id>:<???>
       let attach   = attachments.attach1;
       let amount   = attachments.attach1_amount;
@@ -48,7 +48,7 @@ function parser (messageObj) {
         let lineToLog = (isUserVip ? '[+]' : '[-]') + ` ${(new Date()).toLocaleString('ru')} - ${userId}-${botId}:${amount}${currency}\n`;
 
         // Логгируем информацию о переводе
-        fs.writeFile('./logs/money-transfers.txt', lineToLog, { flag: 'a' }, function (error) {
+        fs.writeFile('./logs/money-transfers.log', lineToLog, { flag: 'a' }, function (error) {
           if (error) 
             debug.err(lineToLog);
 

@@ -24,7 +24,7 @@ function maker ({ userId, botId }, callback) {
   vips.push(userId);
 
   // Сохраняем обновлённый список VIP-ов
-  fs.writeFile('../../data/vips/' + botId + '.json', JSON.stringify(vips), function (error) {
+  fs.writeFile('./data/vips/' + botId + '.json', JSON.stringify(vips), function (error) {
     if (error) 
       return callback(false);
 
