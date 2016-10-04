@@ -32,17 +32,13 @@ function run (arg, callback) {
       'Referer': 'https://www.google.ru/'
     }
   })
-  .then(response => {
-    // Проверим, были ли найдены изображения
-    return parsers.checkGoogleForExist(response);
-  })
+  .then(response => parsers.parseGoogleImgUrl(response))
   .then(result => {
-    // Если result === false, значит, таких изоюражений нет. 
-    // В обратном случае, result = полученная html-страничка с результатами
-    if (result) 
-      return parsers.parseGoogleImgUrl(result);
+    // Если result === null, значит, таких изображений нет. 
+    if (result === null) 
+      throw callback(null, 'Не найдено изображений по вашему запросу.');
 
-    throw callback(null, 'Не найдено изображений по вашему запросу.');
+    return result;
   })
   .then(imgurl => {
     // В данном случае imgurl является функцией, которая возвращает 

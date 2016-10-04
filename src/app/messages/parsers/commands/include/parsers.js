@@ -12,6 +12,10 @@ module.exports = {
     return new Promise((resolve, reject) => {
       let $ = cheerio.load(rbody);
 
+      // По запросу ничего не найдено
+      if (/ничего не найдено/i.test($('#topbar').next('div').text())) 
+        return resolve(null);
+
       function getImageUrl () {
         let imageNumber = 0;
 
