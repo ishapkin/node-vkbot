@@ -34,9 +34,8 @@ class LongPolling extends EventEmitter {
 
         return this.check(link);
       })
-      .catch(err => {
-        debug.err('- Error in LongPolling._updateFullLinkAndStart()');
-        debug.err(err.stack);
+      .catch(error => {
+        debug.err('_updateFullLinkAndStart()', error);
 
         return this._updateFullLinkAndStart();
       });

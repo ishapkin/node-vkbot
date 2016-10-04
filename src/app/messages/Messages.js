@@ -143,14 +143,14 @@ class Messages {
    */
   _updateChatComp (chat_id) {
     return this.parent.VKApi.call('messages.getChatUsers', { chat_id, fields: 'first_name' })
-      .then(res => {
+      .then(response => {
         // Бота уже нет в беседе. Очищаем информацию о чате
-        if (res.length === 0) {
+        if (response.length === 0) {
           // 1. Удаляем список участников
           delete this._conversations[chat_id].users;
 
           // 2. Удаляем сообщения в этот чат из очереди
-          // В случае, если бота кикнули (это отследить можно только проверив res.length === 0), 
+          // В случае, если бота кикнули (это отследить можно только проверив response.length === 0), 
           // то сообщение в любом случае не отправится. Даже если оно не удалится из очереди.
           // Но, на всякий случай, сообщения всё-таки удаляются, дабы очистить очередь.
           this.Queue.clear(chat_id);
@@ -158,14 +158,14 @@ class Messages {
           return;
         }
 
-        let chatUsers = chatUsersArrayToObj(res, this.parent._botId);
-
-        this._conversations[chat_id].users = chatUsers;
+        // Сохраняем полученный список участников
+        this._conversations[chat_id].users = chatUsersArrayToObj(response, this.parent._botId);
       })
-      .catch(err => {
+      .catch(error => {
         debug.err('Error in _updateChatComp');
-        debug.err(err.stack);
+        debug.err(error);
 
+        // Снова пытаемся получить список участников
         return this._updateChatComp(chat_id);
       });
   }

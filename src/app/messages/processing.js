@@ -71,15 +71,17 @@ function processUpdates (item) {
 
       if (messToSend !== null) {
         // Сообщения от админов, модеров и випов обрабатываются в первую очередь
-        if (messageObjectMiddlewared.permissionsMask >= 1) 
-          this.Queue.enqueueTo(Math.abs(messageObjectMiddlewared.permissionsMask - 4), messToSend, messageObjectMiddlewared.chatId);
-        else 
+        if (messageObjectMiddlewared.permissionsMask >= 1) {
+          // Max - current
+          let position = 4 - messageObjectMiddlewared.permissionsMask;
+
+          this.Queue.enqueueTo(position, messToSend, messageObjectMiddlewared.chatId);
+        } else 
           this.Queue.enqueue(messToSend, messageObjectMiddlewared.chatId);
       }
     })
     .catch(error => {
-      debug.err('processUpdates()');
-      debug.err(error.stack);
+      debug.err('processUpdates()', error);
     });
 }
 
