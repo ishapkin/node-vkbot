@@ -17,9 +17,10 @@ echo 'Copying files to remote host';
 (
   rsync -ar ./build $HOST:~/vkbot/
   rsync -ar ./node_modules $HOST:~/vkbot/
+  rsync -ar ./package.json $HOST:~/vkbot/
 ) || (echo '# Failed' && exit 1);
 
 echo 'Starting the application';
 ssh $HOST /bin/bash << EOF
-  cd ./vkbot && node ./build/main && echo '# Started' || echo '# Not started';
+  cd ./vkbot && npm start && echo '# Started' || echo '# Not started';
 EOF
