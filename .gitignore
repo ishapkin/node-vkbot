@@ -3,6 +3,5 @@ _/*
 !utilities/
 build/
 node_modules/
-CHANGELOG.md
 TODO.md
 npm-debug.log
