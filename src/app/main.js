@@ -12,7 +12,6 @@
  * @private
  */
 const async = require('async');
-const fs    = require('fs');
 const debug = require('../lib/simple-debug')(__filename);
 const init  = require('./application/init');
 
@@ -26,24 +25,9 @@ const accountKeys = Object.keys(accounts);
 var BotInstances = {};
 
 /**
- * Проверяет, существует ли файл по указанному пути
- * @param  {String}  path Путь
- * @return {Boolean}
- */
-function isFileExist (path) {
-  let exists = false;
-
-  try {
-    exists = !fs.accessSync(path);
-  } catch (e) {}
-
-  return exists;
-}
-
-/**
  * Сохраняет некоторые важные данные перед завершением процесса
  */
-function save () {
+function turnoff () {
   debug.out('= SIGINT received. Saving data and turning off bots');
 
   for (let i = 0, keys = Object.keys(BotInstances), len = keys.length; i < len; i++) {
@@ -51,11 +35,6 @@ function save () {
 
     // Установим статус "оффлайн"
     BotInstances[keys[i]].shutdown();
-
-    // Сохраним некоторые важные данные
-    // Messages._conversations (участники бесед)
-    let conversations = BotInstances[keys[i]].Messages._conversations;
-    fs.writeFileSync(`./data/temp/${botId}_conversations.json`, JSON.stringify(conversations));
   }
 
   debug.out('+ All bots were turned off');
@@ -87,11 +66,6 @@ async.series(
       // Сохраняем экземпляр бота
       BotInstances[botId] = results[i];
 
-      // Восстанавливаем список участников беседы, если он был сохранён.
-      let conversationsPath = `./data/temp/${botId}_conversations`;
-      if (isFileExist(conversationsPath + '.json')) 
-        BotInstances[botId].Messages._conversations = require('.' + conversationsPath);
-
       // Запускаем бота
       BotInstances[botId].start();
 
@@ -107,4 +81,4 @@ async.series(
  * Устанавливаем статус ботам "Оффлайн" при завершении работы приложения. 
  * А также сохраняем некоторые временные данные
  */
-process.on('SIGINT', () => save());
+process.on('SIGINT', () => turnoff());
