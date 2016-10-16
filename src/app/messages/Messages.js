@@ -162,6 +162,10 @@ class Messages {
         this._conversations[chat_id].users = chatUsersArrayToObj(response, this.parent._botId);
       })
       .catch(error => {
+        // Internal server error or Too many requests error
+        if (error.name === 'VKApiError' && (error.code === 10 || error.code === 6)) 
+          return;
+
         debug.err('Error in _updateChatComp');
         debug.err(error);
 
@@ -252,8 +256,11 @@ class Messages {
           return this._send(messageObj);
         }
 
-        debug.err('- Error in Messages.send()');
-        debug.err(error);
+        // Internal server error
+        if (error.name === 'VKApiError' && error.code === 10) 
+          return;
+
+        debug.err('Messages.send()', error);
       });
   }
 
