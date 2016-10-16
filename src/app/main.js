@@ -28,7 +28,7 @@ var BotInstances = {};
  * Сохраняет некоторые важные данные перед завершением процесса
  */
 function turnoff () {
-  debug.out('= SIGINT received. Saving data and turning off bots');
+  debug.err('= SIGINT received. Saving data and turning off bots');
 
   for (let i = 0, keys = Object.keys(BotInstances), len = keys.length; i < len; i++) {
     let botId = BotInstances[keys[i]]._botId;
@@ -37,7 +37,7 @@ function turnoff () {
     BotInstances[keys[i]].shutdown();
   }
 
-  debug.out('+ All bots were turned off');
+  debug.err('+ All bots were turned off');
 
   // Завершим процесс, если он ещё не завершен.
   // При этом, нужно убедиться, что функция .shutdown() отработала.
