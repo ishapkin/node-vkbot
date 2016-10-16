@@ -9,7 +9,7 @@ const search = require('./_vk-search.js');
 module.exports = {
   enabled: true, 
   unique:  false, 
-  mask: 0, 
+  mask: 3, 
 
   aliases:     ['видео'], 
   description: 'Осуществляет поиск видеозаписей во ВКонтакте по заданному запросу.', 
