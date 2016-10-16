@@ -12,9 +12,9 @@ const prequest = require('request-promise');
  * Local constants
  * @private
  */
-const MIN_LENGTH     = 140;
-const MAX_LENGTH     = 320;
-const MAX_LENGTH_PRO = 500;
+const MIN_LENGTH     = 10;
+const MAX_LENGTH     = 200;
+const MAX_LENGTH_PRO = 400;
 const RU_CHAR_CODES  = [1072, 1103, 1105]; // а, я, ё (lowercase)
 const DEFAULTS       = {
   femaleSwitchers: ['-f', '-female', '-ж'], 
@@ -161,7 +161,7 @@ function run (arg, callback) {
     // Получаем в ответ readable steam
     .then(audioBuffer => {
       // Загружаем аудиозапись в ВКонтакте
-      return VK.upload('audio', {
+      return VK.upload('document', {
         // Данные для загрузки
         data: {
           value: audioBuffer, 
@@ -171,25 +171,19 @@ function run (arg, callback) {
           }
         }, 
 
-        // После загрузки меняем название аудиозаписи
-        afterUpload: {
-          artist: 'Text-to-Speech', 
-          title
+        beforeUpload: {
+          type: 'audio_message'
         }
       });
     })
     // Обрабатываем ответ
     .then(response => {
       return callback(null, {
-        attachments: 'audio' + response.owner_id + '_' + response.id
+        attachments: 'doc' + response[0].owner_id + '_' + response[0].id
       });
     })
     // Обрабатываем возникающие ошибки
     .catch(error => {
-      // "Copyright errors"
-      if (error.name === 'VKApiError' && error.code === 270) 
-        return callback(null, 'Не удалось загрузить аудиозапись, т.к. она <<нарушет авторские права>>. Попробуйте сделать другой запрос.');
-
       return callback(error, 'Произошла неизвестная ошибка. Повторите запрос позже.');
     });
 }
@@ -200,7 +194,7 @@ module.exports = {
   mask: 0, 
 
   aliases:     ['скажи'], 
-  description: `Озвучивает указанный текст.\nДлина текста: от ${MIN_LENGTH} до ${MAX_LENGTH} символов.`, 
+  description: `Озвучивает указанный текст.\nДлина текста: от ${MIN_LENGTH} до ${MAX_LENGTH} (до ${MAX_LENGTH_PRO} для VIPов) символов.`, 
   use: `/tts [${DEFAULTS.femaleSwitchers.join(' | ')}] <текст>`, 
 
   run
