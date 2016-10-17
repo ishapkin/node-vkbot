@@ -10,7 +10,7 @@ const prequest = require('request-promise');
  * Local constants
  * @private
  */
-const SERVICE_URL = 'https://howhot.io/main.php';
+const SERVICE_URL = 'http://howhot.io/main.php';
 const GENDER      = {
   'Female': '👩 Женщина', 
   'Male':   '👨 Мужчина'
