@@ -43,7 +43,9 @@ function run (arg, callback) {
 
   return prequest(url, {
       encoding, 
-      [paramName]: searchText
+      qs: {
+        [paramName]: searchText
+      }
     })
     .then(response => {
       // Если isRandom === true, значит в response сейчас находится readable stream, 
