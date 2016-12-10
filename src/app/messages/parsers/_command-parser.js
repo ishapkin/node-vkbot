@@ -14,7 +14,7 @@ const debug     = require('../../../lib/simple-debug')(__filename);
 const Arguments = require('./helpers/arg-parser');
 
 function commandParser (messageObj) {
-  let self    = this; // this = Application
+  let self    = this; // this = Bot
   let message = messageObj.message;
   let cmdList = self._commands;
 
@@ -54,7 +54,10 @@ function commandParser (messageObj) {
 
     // Недостаточно прав для использования команды.
     if (messageObj.permissionsMask < cmdToUse.mask) 
-      return cb(null);
+      return cb({
+        message: 'Недостаточно прав для использования команды.\nПодробнее: vk.com/page-110327182_51316051', 
+        forward: messageObj.isMultichat
+      });
 
     // Запускаем команду.
     // Передаём ей контекст приложения (Application class).
