@@ -12,6 +12,7 @@ const prequest       = require('request-promise');
 const config         = require('../../../config');
 const getFromLocalDB = require('./helpers/get-answer-from-local-db');
 const commandParser  = require('./_command-parser');
+const cleverbot      = require('../helpers/cleverbot');
 
 /**
  * Функция, возвращающая фейк-коллбэк, который всегда отдаёт null.
@@ -22,16 +23,6 @@ function fakeNullResult () {
   return function (callback) {
     return callback(null);
   }
-}
-
-function encodeParams (params) {
-  let output = [];
-
-  for (let x in params) {
-    output.push(x + "=" + encodeURIComponent(params[x]));
-  }
-
-  return output.join("&");
 }
 
 module.exports = function (messageObj) {
@@ -45,6 +36,12 @@ module.exports = function (messageObj) {
 
     fn: function appealParser (cb) {
       let message = messageObj.message;
+
+      // Устанавливаем статус набора текста "<Бот> печатает..."
+      messageObj._vkapi.call('messages.setActivity', {
+        type: 'typing', 
+        [isMultichat ? 'peer_id' : 'user_id']: isMultichat ? (messageObj.chatId + 2000000000) : messageObj.fromId
+      }).then(response => null).catch(error => null);
 
       /**
        * Пытаемся вызывать команды, вызванные в "разговорной форме" (Бот, <команда>). 
@@ -82,17 +79,14 @@ module.exports = function (messageObj) {
           return cb(null);
 
         // Пытаемся получить ответ от cleverbot.com
-        return prequest.post('http://cleverbot.existor.com/webservicexml', {
-            resolveWithFullResponse: true, 
-            followAllRedirects: true, 
-            body: encodeParams({
-              'icognoID': config.api.cleverbot.login, 
-              'icognoCheck': config.api.cleverbot.password, 
-              'stimulus': message.slice(0, 250)
-            })
+        return cleverbot.send({
+            user: config.api.cleverbot, 
+            message: {
+              text:  message.slice(0, 250)
+            }
           })
           .then(cleverAns => {
-            let ansMess = decodeURIComponent(cleverAns.headers.cboutput).trim();
+            let ansMess = cleverAns.response.trim();
 
             // Не пришло внятного ответа 
             // Или от cleverbot.com пришло рекламное сообщение, 
