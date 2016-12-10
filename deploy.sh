@@ -3,10 +3,6 @@
 # First argument is the name of host from ssh config
 HOST="$1"
 
-echo 'Backup folders "data/vips" and "logs"';
-rsync -ar $HOST:~/vkbot/build/logs ./_/backup;
-rsync -ar $HOST:~/vkbot/build/data/vips ./_/backup;
-
 echo 'Turning bots off';
 ssh $HOST /bin/bash << EOF
   pm2 delete all;
