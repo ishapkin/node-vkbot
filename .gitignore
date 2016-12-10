@@ -2,6 +2,7 @@ _/*
 !execute/
 !utilities/
 build/
+test/
 node_modules/
 TODO.md
 npm-debug.log
