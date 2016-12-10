@@ -22,10 +22,13 @@ const admins = require('../../../data/admins');
  * @param  {Object} messageObj Объект сообщения
  * @return {Object}            Добавляемое свойство
  * @public
+ *
+ * Функции передаётся контекст (this) класса Bot (./bot/Bot.js)
  */
 function middleware (messageObj) {
-  // Получаем список VIP-пользователей для текущего бота
-  const vips          = require('../../../data/vips/' + messageObj.botId);
+  // Получаем данные о VIP-статусах для текущего юзера
+  const userVipData = this.parent._databases['users'].data[messageObj.fromId];
+
   let permissionsMask = 0;
   let currentChatUser = messageObj.chatUsers && messageObj.chatUsers[messageObj.fromId];
 
@@ -40,7 +43,7 @@ function middleware (messageObj) {
   }
 
   // VIP-пользователь
-  if (~vips.indexOf(messageObj.fromId)) 
+  if (userVipData === 'all' || Array.isArray(userVipData) && userVipData.includes(messageObj.botId)) 
     permissionsMask = 3;
 
   // Администратор

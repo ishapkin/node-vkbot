@@ -2,7 +2,9 @@
 
 /**
  * Определяет, является ли пользователь админом/модером/випом 
- * и возвращает permissionsMask
+ * и возвращает permissionsMask.
+ *
+ * Функции передаётся контекст (this) класса Bot (./bot/Bot.js)
  */
 
 /**
@@ -12,12 +14,16 @@
 const admins = require('../../../../data/admins');
 
 module.exports = function (userId, botId) {
-  const vips          = require('../../../../data/vips/' + botId);
+  // Получаем данные о VIP-статусах для текущего юзера
+  const userVipData = this.parent._databases['users'].data[userId];
+
   let permissionsMask = 0;
 
-  if (~vips.indexOf(userId)) 
+  // VIP-пользователь
+  if (userVipData === 'all' || Array.isArray(userVipData) && userVipData.includes(messageObj.botId)) 
     permissionsMask = 3;
 
+  // Администратор
   if (~admins.indexOf(userId)) 
     permissionsMask = 4;
 
