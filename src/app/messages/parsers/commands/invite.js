@@ -97,7 +97,7 @@ function run (arg, callback) {
 module.exports = {
   enabled: true, 
   unique:  'mchat', 
-  mask: 1, 
+  mask: 3, 
 
   aliases:     ['пригласи'], 
   description: 'Приглашает в беседу рандомного друга бота.', 

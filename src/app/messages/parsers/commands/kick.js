@@ -34,7 +34,7 @@ function run (arg, callback) {
         throw callback(null, 'Данного пользователя не существует.');
 
       let user_id         = parseInt(response.object_id);
-      let permissionsMask = getPermissionsMask(user_id, argObj.botId);
+      let permissionsMask = getPermissionsMask.call(this, user_id, argObj.botId);
 
       // Этого пользователя нет в чате
       if (!chatUsers[user_id]) 
@@ -77,7 +77,7 @@ function run (arg, callback) {
 module.exports = {
   enabled: true, 
   unique:  'mchat', 
-  mask: 2, 
+  mask: 3, 
 
   aliases:     [], 
   description: 'Кикает пользователя из чата.', 

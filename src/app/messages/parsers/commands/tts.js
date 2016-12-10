@@ -12,9 +12,9 @@ const prequest = require('request-promise');
  * Local constants
  * @private
  */
-const MIN_LENGTH     = 10;
+const MIN_LENGTH     = 5;
 const MAX_LENGTH     = 200;
-const MAX_LENGTH_PRO = 400;
+const MAX_LENGTH_PRO = 600;
 const RU_CHAR_CODES  = [1072, 1103, 1105]; // а, я, ё (lowercase)
 const DEFAULTS       = {
   femaleSwitchers: ['-f', '-female', '-ж'], 

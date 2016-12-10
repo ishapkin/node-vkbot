@@ -9,7 +9,7 @@ const search = require('./_vk-search.js');
 module.exports = {
   enabled: true, 
   unique:  false, 
-  mask: 0, 
+  mask: 3, 
 
   aliases:     ['гиф', 'гифка'], 
   description: 'Осуществляет поиск .gif-документов во ВКонтакте по заданному запросу.', 
