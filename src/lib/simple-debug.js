@@ -14,13 +14,11 @@ const DEBUG_ACTIVE = process.env.DEBUG;
  */
 function logger (absolutePath) {
   // Приводим все пути к формату: directory/filename.js
-  let path   = absolutePath.split('/').slice(-2).join('/');
-  let date   = (new Date()).toLocaleString('ru');
-  let prefix = `[${date}][${path}]`;
+  let path = absolutePath.split('/').slice(-2).join('/');
 
   return {
-    err: (...args) => console.error(prefix, ...args, '\n'), 
-    out: (...args) => DEBUG_ACTIVE ? console.log(prefix, ...args, '\n') : null
+    err: (...args) => console.error(`[${(new Date()).toLocaleString('ru')}][${path}]`, ...args, '\n'), 
+    out: (...args) => DEBUG_ACTIVE ? console.log(`[${(new Date()).toLocaleString('ru')}][${path}]`, ...args, '\n') : null
   }
 }
 
