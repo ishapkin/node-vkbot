@@ -33,13 +33,13 @@ pm2.connect(error => {
   async.series(
     startWrapper([
       // Сервер
-/*      {
+      {
         name: 'server', 
         script: './server', 
         cwd: __dirname, 
         error_file: __dirname + '/logs/server-error.log', 
         out_file: __dirname + '/logs/server-out.log'
-      }, */
+      }, 
 
       // Приложение
       {
