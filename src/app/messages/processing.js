@@ -40,7 +40,7 @@ function processUpdates (item) {
   // 2. Проверяем, всё ли ок (есть ли боты в беседе)
   // 3. Применяем парсер (обращение, команда, приглашение, etc.)
   // 4. Собираем сообщение и помещаем в очередь
-  return apply.middleware(messageObject)
+  return apply.middleware.call(this.parent, messageObject)
     .then(messageObj => {
       messageObjectMiddlewared = messageObj;
 

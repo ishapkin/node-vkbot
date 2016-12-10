@@ -4,51 +4,58 @@
  * Точка входа в приложение (./app)
  *
  * Создаёт и запускает отдельный экземпляр приложения для каждого бота. 
- * Все экземпляры хранятся в BotInstances
+ * Все экземпляры хранятся в классе Application. 
  */
 
 /**
- * Module dependencies
+ * Module dependencies.
  * @private
  */
-const async = require('async');
-const debug = require('../lib/simple-debug')(__filename);
-const init  = require('./application/init');
+const async        = require('async');
+const JsonDatabase = require('node-json-db');
 
+const Application  = require('./application/Application');
+const debug        = require('../lib/simple-debug')(__filename);
+const init         = require('./application/init');
+
+// Accounts data
 const accounts    = require('../accounts');
 const accountKeys = Object.keys(accounts);
 
-// {
-//    <bot_id>: <instance>
-//    <...>
-// }
-var BotInstances = {};
+// Database files
+const usersDatabase  = new JsonDatabase('./data/users.json', true);
+const bannedDatabase = new JsonDatabase('./data/banned.json', true);
 
-/**
- * Сохраняет некоторые важные данные перед завершением процесса
- */
-function turnoff () {
-  debug.err('= SIGINT received. Saving data and turning off bots');
+const app = new Application();
 
-  for (let i = 0, keys = Object.keys(BotInstances), len = keys.length; i < len; i++) {
-    let botId = BotInstances[keys[i]]._botId;
+debug.out('= Loading databases');
 
-    // Установим статус "оффлайн"
-    BotInstances[keys[i]].shutdown();
-  }
-
-  debug.err('+ All bots were turned off');
-
-  // Завершим процесс, если он ещё не завершен.
-  // При этом, нужно убедиться, что функция .shutdown() отработала.
-  // process.exit(0);
-}
+usersDatabase.load();
+bannedDatabase.load();
 
 debug.out('= Starting of all the bots was begin');
 
-// Запускаем всех ботов, указанных в accounts.json
+/**
+ * Инициализируем экземпляры всех ботов, указанных в accounts.js:
+ *   1. Будут получены команды для каждого бота;
+ *   2. Будет получен токен для каждого бота;
+ *   3. Будет возвращен экземпляр каждого бота.
+ */
 async.series(
-  accountKeys.map(v => init(Object.assign(accounts[v], { id: v }))), 
+  // Составляем массив функций-инициализаторов
+  accountKeys.map(botId => {
+    let authData   = accounts[botId];
+    let initObject = Object.assign(authData, { id: botId });
+    
+    return init(initObject);
+  }), 
+
+  /**
+   * Функция, вызываемая по завершении инициализации ботов
+   * @param  {Object} error   
+   * @param  {Array} results  Массив экземпляров ботов
+   * @private
+   */
   function (error, results) {
     // Ошибка при запуске бота. Скорее всего, не удалось получить токен.
     // Завершаем процесс, разбираемся с ошибкой.
@@ -57,22 +64,19 @@ async.series(
       process.exit(0);
     }
 
-    debug.out('+ All bots\' instances were created. Starting bots');
+    debug.out('+ All bots\' instances were created.');
 
-    // Запускаем всех ботов по очереди
-    for (let i = 0, len = results.length; i < len; i++) {
-      let botId = accountKeys[i];
+    // Добавляем ботов в приложение
+    app.add(results);
 
-      // Сохраняем экземпляр бота
-      BotInstances[botId] = results[i];
+    // Установим ссылки на базы данных
+    app._databases['users']  = usersDatabase;
+    app._databases['banned'] = bannedDatabase;
 
-      // Запускаем бота
-      BotInstances[botId].start();
+    // Запускаем приложение
+    app.start();
 
-      debug.out(`+ Bot "id${botId}" was started`);
-    }
-
-    debug.out('+ All bots were started');
+    debug.out('+ All bots were started.');
   }
 );
 
@@ -81,4 +85,32 @@ async.series(
  * Устанавливаем статус ботам "Оффлайн" при завершении работы приложения. 
  * А также сохраняем некоторые временные данные
  */
-process.on('SIGINT', () => turnoff());
+process.on('SIGINT', () => {
+  debug.err('= SIGINT received. Saving data and turning off bots');
+
+  // Завершаем работу ботов
+  app.stop();
+
+  debug.err('+ All bots were turned off');
+
+  // Завершим процесс, если он ещё не завершен.
+  // При этом, нужно убедиться, что функция .shutdown() отработала.
+  // process.exit(0);
+});
+
+/**
+ * Обрабатываем межпроцессные сообщения
+ * @param  {Object} messageObject
+ */
+process.on('message', messageObject => {
+  let dataObject = messageObject.data;
+
+  // Обработаем событие обновления базы данных
+  if (dataObject.event === 'database_updated') {
+    if (dataObject.target === 'banned.json') 
+      bannedDatabase.reload();
+
+    if (dataObject.target === 'users.json') 
+      usersDatabase.reload();
+  }
+});

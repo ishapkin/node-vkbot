@@ -61,7 +61,7 @@ function middleware (messageObj) {
 
     // Прогоняем сообщения через мидлвэйры
     for (let i = 0, len = middlewares.length; i < len; i++) 
-      newVars.push(middlewares[i](messageObj));
+      newVars.push(middlewares[i].call(this, messageObj));
 
     // Вносим изменения в исходный объект сообщения
     output = Object.assign(messageObj, ...newVars);
