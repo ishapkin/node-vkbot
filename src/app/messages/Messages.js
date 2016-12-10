@@ -195,8 +195,16 @@ class Messages {
 
         // Значение 4 в нулевом элементе массива -> пришло новое сообщение. 
         // Обрабатываем все сообщения, за исключением сообщений от бота
-        if (current[0] === 4 && ((current[7].from && parseInt(current[7].from) !== this.parent._botId) || checkPmFlags(current[2]))) 
+        if (current[0] === 4 && ((current[7].from && parseInt(current[7].from) !== this.parent._botId) || checkPmFlags(current[2]))) {
+          let currentUserId = current[7].from ? parseInt(current[7].from) : parseInt(current[3]);
+
+          // Если пользователь, написавший сообщение, заблокирован, то 
+          // сообщение обработано не будет. 
+          if (this.parent.parent._databases['banned'].data.includes(currentUserId)) 
+            return;
+
           processing.call(this, current);
+        }
       }
     });
 
