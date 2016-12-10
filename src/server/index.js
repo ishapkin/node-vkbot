@@ -4,16 +4,23 @@
  * Module dependencies
  * @private
  */
-const config = require('../config');
-const server = require('http').createServer();
-const url    = require('url');
+const config    = require('../config')['vk-group'];
+const processor = require('./processor');
+const server    = require('http').createServer();
+const url       = require('url');
 
 server
   .on('request', function (request, response) {
-    let data = '';
+    let data     = '';
+    let pathname = url.parse(request.url).pathname;
 
-    if (url.parse(request.url).pathname !== '/vk') 
+    // Обрабатываем запросы, пришедшие на /vkcallback
+    if (pathname !== '/vkcallback') {
+      response.writeHead(400);
+      response.end();
+
       return;
+    }
 
     request
       .setEncoding('utf8')
@@ -21,7 +28,7 @@ server
         data += chunk;
       })
       .on('end', () => {
-        let dataJson = null;
+        let dataJson;
 
         try {
           dataJson = JSON.parse(data);
@@ -29,10 +36,23 @@ server
           dataJson = {};
         }
 
-        // Ответим ВКонтакте, что запрос обработан, чтобы он не посылал его снова
+        // Ответим ВКонтакте, что запрос обработан
         response.writeHead(200, { 'Content-Type': 'text/plain' });
-        response.write('ok');
+
+        // Подтвердим адрес сервера, если нужно
+        if (dataJson.type === 'confirmation') 
+          response.write(config.confirm);
+        else
+          response.write('ok');
+
         response.end();
+
+        // Код secret не совпадает
+        if (dataJson.secret !== config.secret) 
+          return;
+
+        // Обработаем полученные данные
+        processor(dataJson);
       });
   })
-  .listen(8080);
+  .listen(80);
