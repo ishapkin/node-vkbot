@@ -10,10 +10,6 @@ function run (arg, callback) {
   let argObj = arg.source;
   let VK     = argObj._vkapi;
 
-  // VIP и ниже не может кикнуть бота из беседы, если он не является её админом или пригласившим бота
-  if (argObj.permissionsMask <= 3 && !(argObj.chatUsers[argObj.fromId].botInviter || argObj.chatUsers[argObj.fromId].chatAdmin)) 
-    return callback(null);
-
   // Выходим из беседы
   return VK.call('messages.removeChatUser', {
       chat_id: argObj.chatId, 
