@@ -13,6 +13,24 @@ const path      = require('path');
 const debug     = require('../../../lib/simple-debug')(__filename);
 const Arguments = require('./helpers/arg-parser');
 
+/**
+ * Local constants.
+ * @private
+ */
+const PRMS_LEVELS = [
+  // 0: все юзеры
+  null, 
+
+  // 1: пригласившие бота
+  'Команда доступна тем, кто пожертвовал на развитие ботов, или является создателем беседы, или пригласил бота в беседу.', 
+
+  // 2: создатели бесед
+  'Команда доступна тем, кто пожертвовал на развитие ботов, или является создателем беседы.', 
+
+  // 3: vip (пожертвовавшие)
+  'Команда доступна тем, кто пожертвовал на развитие ботов.'
+];
+
 function commandParser (messageObj) {
   let self    = this; // this = Bot
   let message = messageObj.message;
@@ -53,11 +71,15 @@ function commandParser (messageObj) {
       return cb(helpObject);
 
     // Недостаточно прав для использования команды.
-    if (messageObj.permissionsMask < cmdToUse.mask) 
+    if (messageObj.permissionsMask < cmdToUse.mask) {
       return cb({
-        message: 'Недостаточно прав для использования команды.\nПодробнее: vk.com/page-110327182_51316051', 
+        message: 'Недостаточно прав для использования команды.\n\n' + 
+                 PRMS_LEVELS[cmdToUse.mask] + 
+                 '\n\nПожертвования: vk.com/topic-110327182_35048441' + 
+                 '\nСписок команд: vk.com/page-110327182_51316051, 
         forward: messageObj.isMultichat
       });
+    }
 
     // Запускаем команду.
     // Передаём ей контекст приложения (Application class).
