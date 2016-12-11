@@ -76,7 +76,7 @@ function commandParser (messageObj) {
         message: 'Недостаточно прав для использования команды.\n\n' + 
                  PRMS_LEVELS[cmdToUse.mask] + 
                  '\n\nПожертвования: vk.com/topic-110327182_35048441' + 
-                 '\nСписок команд: vk.com/page-110327182_51316051, 
+                 '\nСписок команд: vk.com/page-110327182_51316051', 
         forward: messageObj.isMultichat
       });
     }
