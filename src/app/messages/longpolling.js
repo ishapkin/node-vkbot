@@ -28,8 +28,12 @@ class LongPolling extends EventEmitter {
   _updateFullLinkAndStart () {
     debug.out('= Updating full LongPoll URL and starting checking again.');
 
-    return this.parent.parent.VKApi.call('execute.getLongPollServerLink')
-      .then(link => {
+    // Получаем данные для подключения к LongPoll серверу
+    return this.parent.parent.VKApi.call('messages.getLongPollServer')
+      .then(response => {
+        // Составляем URL
+        let link = `https://${response.server}?act=a_check&wait=25&mode=2&key=${response.key}&ts=${response.ts}`;
+
         debug.out('+ URL was successfully got. Starting checking now.');
 
         return this.check(link);
