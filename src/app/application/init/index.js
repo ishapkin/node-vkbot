@@ -26,10 +26,11 @@ const fs          = require('fs');
  *         @property {String} pass  Пароль
  * @param  {String}  options.id    ID бота
  * @param  {String}  options._cond Условие добавления
+ * @param  {String}  options._name Имя бота
  * @return {Function}
  * @public
  */
-function init ({ auth, id, _cond }) {
+function init ({ auth, id, _cond, _name }) {
   /**
    * Callback-функция, которая вернёт (error, result), 
    * где result - экземпляр приложения бота.
@@ -99,6 +100,7 @@ function init ({ auth, id, _cond }) {
           id, 
           commands, 
           condition: _cond, 
+          name: _name, 
           token: tokens[id]
         }));
       })

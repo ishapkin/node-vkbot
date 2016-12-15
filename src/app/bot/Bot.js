@@ -12,7 +12,7 @@ const VKApi    = require('node-vkapi');
  * Bot main class
  */
 class Bot {
-  constructor ({ id, token, condition, commands }) {
+  constructor ({ id, token, condition, name, commands }) {
     // ID бота
     this._botId = parseInt(id);
 
@@ -21,6 +21,9 @@ class Bot {
 
     // Условие добавления бота в друзья
     this._cond = condition;
+
+    // Имя бота
+    this._name = name;
 
     // Класс для работы с сообщениями
     this.Messages  = new Messages(this);
