@@ -67,6 +67,7 @@ function init ({ auth, id, _cond, _name }) {
           id, 
           commands, 
           condition: _cond, 
+          name: _name, 
           token: tokens[id]
         }));
       }
