@@ -133,6 +133,13 @@ class Messages {
         return target[prop];
       }
     });
+
+    /**
+     * Timestamp последнего успешно отправленного сообщения.
+     * @type {Number}
+     * @private
+     */
+    this._lastMessageTime = 0;
   }
 
   /**
@@ -233,7 +240,12 @@ class Messages {
         message = null;
 
       return this._send(message)
-        .then(() => setTimeout(() => this._queueLoop(), config.messages.delay))
+        .then(() => {
+          // Обновим timestamp последнего успешно отправленного сообщения
+          this._lastMessageTime = Date.now();
+
+          return setTimeout(() => this._queueLoop(), config.messages.delay);
+        })
         .catch(error => {
           debug.err('- Error in Messages._queueLoop()');
           debug.err(error.stack);

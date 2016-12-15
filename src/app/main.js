@@ -13,10 +13,14 @@
  */
 const async        = require('async');
 const JsonDatabase = require('node-json-db');
+const timeago      = require('timeago.js');
+      // Добавим русскую локализацию для timeago.js
+      timeago.register('ru', require('../../node_modules/timeago.js/locales/ru'));
 
 const Application  = require('./application/Application');
 const debug        = require('../lib/simple-debug')(__filename);
 const init         = require('./application/init');
+const pm2sender    = require('../lib/pm2-sender');
 
 // Accounts data
 const accounts    = require('../accounts');
@@ -103,14 +107,39 @@ process.on('SIGINT', () => {
  * @param  {Object} messageObject
  */
 process.on('message', messageObject => {
-  let dataObject = messageObject.data;
+  let event  = messageObject.data.event;
+  let target = messageObject.data.target;
 
   // Обработаем событие обновления базы данных
-  if (dataObject.event === 'database_updated') {
-    if (dataObject.target === 'banned.json') 
+  if (event === 'database_updated') {
+    if (target === 'banned.json') 
       bannedDatabase.reload();
 
-    if (dataObject.target === 'users.json') 
+    if (target === 'users.json') 
       usersDatabase.reload();
+  }
+
+  // Обработаем событие отправки запрошенных данных
+  if (event === 'data_needed') {
+    // Нужно отправить необходимые данные для команды сообщества "/status"
+    if (target === 'status') {
+      // Информация о состоянии ботов
+      let botsInfo = [];
+
+      for (let i = 0, keys = Object.keys(app.bots), len = keys.length; i < len; i++) {
+        let currentBot                = app.bots[keys[i]];
+        let currentBotName            = currentBot._name;
+        let currentBotQueueLength     = currentBot.Messages.Queue.queue.length;
+        let currentBotLastMessageTime = currentBot.Messages._lastMessageTime;
+            currentBotLastMessageTime = (new timeago()).format(currentBotLastMessageTime, 'ru');
+
+        botsInfo.push(`🐩 ${currentBotName}\n✉ Сообщений в очереди: ${currentBotQueueLength}\n✏ Последний ответ: ${currentBotLastMessageTime}`);
+      }
+
+      // Отправляем данные
+      pm2sender('server', {
+        botsInfo: botsInfo.join('\n\n')
+      }, () => null);
+    }
   }
 });
