@@ -16,6 +16,7 @@
     "build:test": "bash ./build.sh --test",
     "deploy": "bash ./deploy.sh",
     "start": "node ./build/main",
+    "buildstart:debug": "bash ./build.sh && DEBUG=true node ./build/main",
     "start:debug": "DEBUG=true node ./build/main"
   },
   "dependencies": {

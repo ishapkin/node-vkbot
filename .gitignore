@@ -1,4 +1,6 @@
-_/*
+_/build/config.js
+_/build/accounts.js
+.idea
 !execute/
 !utilities/
 build/
@@ -7,3 +9,4 @@ node_modules/
 TODO.md
 ERRORS.md
 npm-debug.log
+

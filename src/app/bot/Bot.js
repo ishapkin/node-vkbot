@@ -30,14 +30,14 @@ class Bot {
 
     // Экземпляр node-vkapi
     this.VKApi = new VKApi({
-      token, 
+      token,
       captcha: config.api.captcha
     });
   }
 
   /**
    * "Цикл" проверки новых заявок в друзья.
-   * 
+   *
    * Помимо подтверждения заявок в друзья, также:
    * 1. Удаляются исходящие заявки
    * 2. Обновляется статус активности
@@ -80,8 +80,32 @@ class Bot {
   _setStatusAndGetData (status) {
     let method = !this._cond ? 'setStatusAndAddFriends' : 'setStatusAndAddFriendsWithCondition';
 
+    // Bot link
+    var thisBot = this;
+
+    if (!this._cond) {
+      return this.VKApi.call('friends.getRequests', {
+        'out': 0,
+        'need_viewed': 1,
+      }).then(response => {
+        if (response.count && response.count > 0) {
+          for (var i=0; i<response.items.length; i++) {
+            thisBot.VKApi.call('friends.add', {
+              'user_id': response.items[i],
+              'follow': 0,
+              'text': ''
+            }).then(_data => {
+              console.log('Added friend ' + response.items[i] + ' by request');
+            });
+          }
+        }
+
+	return "ok";
+      });
+    }
+
     return this.VKApi.call('execute.' + method, {
-      status, 
+      status,
       condition: this._cond
     });
   }

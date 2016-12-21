@@ -73,10 +73,7 @@ function commandParser (messageObj) {
     // Недостаточно прав для использования команды.
     if (messageObj.permissionsMask < cmdToUse.mask) {
       return cb({
-        message: 'Недостаточно прав для использования команды.\n\n' + 
-                 PRMS_LEVELS[cmdToUse.mask] + 
-                 '\n\nПожертвования: vk.com/topic-110327182_35048441' + 
-                 '\nСписок команд: vk.com/page-110327182_51316051', 
+        message: 'Недостаточно прав для использования команды.\n\n' + PRMS_LEVELS[cmdToUse.mask], 
         forward: messageObj.isMultichat
       });
     }

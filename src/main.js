@@ -35,7 +35,7 @@ pm2.connect(error => {
       // Сервер
       {
         name: 'server', 
-        script: './server', 
+        script: './server/index.js', 
         cwd: __dirname, 
         error_file: __dirname + '/logs/server-error.log', 
         out_file: __dirname + '/logs/server-out.log'
