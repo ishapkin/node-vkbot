@@ -123,7 +123,7 @@ function createSpeech (text, voice) {
   });
 }
 
-function createSpeechDelayed = delayed.delay(createSpeech(...args), 5000);
+let createSpeechDelayed = delayed.delay(createSpeech(...args), 5000);
 
 /**
  * Run command
