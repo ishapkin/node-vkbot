@@ -7,7 +7,7 @@
 const apiKeys  = require('../../../../config').api.ivona;
 const aws4     = require('aws4');
 const prequest = require('request-promise');
-const delayed  = require('delayed');
+// const delayed  = require('delayed');
 
 /**
  * Local constants
@@ -158,7 +158,7 @@ function run (arg, callback) {
     lang = 'en';
 
   // Озвучиваем текст
-  return delayed.delay(createSpeech, {}, argText, DEFAULTS.ivona[lang][gender])
+  return createSpeech(argText, DEFAULTS.ivona[lang][gender])
     // Получаем в ответ readable steam
     .then(audioBuffer => {
       // Загружаем аудиозапись в ВКонтакте
@@ -194,7 +194,7 @@ module.exports = {
   unique:  false, 
   mask: 0, 
 
-  aliases:     ['скажи'], 
+  aliases:     ['скажи', 'пиздани', 'смолви', 'прочитай'], 
   description: `Озвучивает указанный текст.\nДлина текста: от ${MIN_LENGTH} до ${MAX_LENGTH} (до ${MAX_LENGTH_PRO} для VIPов) символов.`, 
   use: `/tts [${DEFAULTS.femaleSwitchers.join(' | ')}] <текст>`, 
 
