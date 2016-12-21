@@ -7,6 +7,7 @@
 const apiKeys  = require('../../../../config').api.ivona;
 const aws4     = require('aws4');
 const prequest = require('request-promise');
+const delayed  = require('delayed');
 
 /**
  * Local constants
@@ -122,6 +123,8 @@ function createSpeech (text, voice) {
   });
 }
 
+function createSpeechDelayed = delayed.delay(createSpeech(...args), 5000);
+
 /**
  * Run command
  * @param  {Arguments}  arg
@@ -157,7 +160,7 @@ function run (arg, callback) {
     lang = 'en';
 
   // Озвучиваем текст
-  return createSpeech(argText, DEFAULTS.ivona[lang][gender])
+  return createSpeechDelayed(argText, DEFAULTS.ivona[lang][gender])
     // Получаем в ответ readable steam
     .then(audioBuffer => {
       // Загружаем аудиозапись в ВКонтакте
