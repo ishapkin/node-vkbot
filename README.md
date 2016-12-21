@@ -7,36 +7,36 @@
 
 ## Установка
 
-   Установить сначала nodejs 6.0 или выше https://nodejs.org/en/download/package-manager/
-   Проверить версию nodejs можно 
+Установить сначала nodejs 6.0 или выше https://nodejs.org/en/download/package-manager/
+Проверить версию nodejs можно 
    
-       $ node -v
+    $ node -v
     
-   или
+или
    
-       $ nodejs -v
+    $ nodejs -v
     
-   Далее клонируем и устанавливаем зависимости через npm
+Далее клонируем и устанавливаем зависимости через npm
    
-       $ git clone https://github.com/olnaz/node-vkbot.git
-       cd node-vkbot
-       npm i
+    $ git clone https://github.com/olnaz/node-vkbot.git
+    $ cd node-vkbot
+    $ npm i
       
-    Копируем файлы настроек
+Копируем файлы настроек
     
-        $ cp src/accounts.default.js _/build/accounts.js
-        $ cp src/config.default.js _/build/config.js
+    $ cp src/accounts.default.js _/build/accounts.js
+    $ cp src/config.default.js _/build/config.js
     
-    И редактируем их, как написано в самих файлах.
+И редактируем их, как написано в самих файлах.
     
-    Далее билдим версию для запуска
+Далее билдим версию для запуска
     
-        $ bash ./build.sh
+    $ bash ./build.sh
     
-    И пытаемся запустить (назодясь в корневой папке проекта)
+И пытаемся запустить (назодясь в корневой папке проекта)
     
-        $ npm run start
+    $ npm run start
     
-    и проверяем, все ли хорошо
+и проверяем, все ли хорошо
     
-        $ pm2 status
+    $ pm2 status
