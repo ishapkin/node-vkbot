@@ -123,8 +123,6 @@ function createSpeech (text, voice) {
   });
 }
 
-let createSpeechDelayed = delayed.delay(createSpeech(...args), 5000);
-
 /**
  * Run command
  * @param  {Arguments}  arg
@@ -160,7 +158,7 @@ function run (arg, callback) {
     lang = 'en';
 
   // Озвучиваем текст
-  return createSpeechDelayed(argText, DEFAULTS.ivona[lang][gender])
+  return delayed.delay(createSpeech, {}, argText, DEFAULTS.ivona[lang][gender])
     // Получаем в ответ readable steam
     .then(audioBuffer => {
       // Загружаем аудиозапись в ВКонтакте
