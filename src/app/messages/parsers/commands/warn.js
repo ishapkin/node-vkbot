@@ -16,23 +16,23 @@ function run (arg, callback) {
   let argText = arg.fullText;
 
   // Нет текста к команде, ничего не отправляем
-  if (argText === null) 
+  if (argText === null)
     return callback(null);
 
   return callback(null, {
-    message: 'Внимание, важная информация!', 
+    message: 'Внимание, важная информация!',
     attachments: PHOTO_URL
   });
 }
 
 module.exports = {
-  enabled: true, 
-  unique:  'mchat', 
-  mask: 1, 
+  enabled: true,
+  unique:  'mchat',
+  mask: 0,
 
-  aliases:     ['внимание'], 
-  description: 'Перешлет ваше сообщение с особым форматированием (Внимание, важная информация).', 
-  use: '/warn <текст>', 
+  aliases:     ['внимание'],
+  description: 'Перешлет ваше сообщение с особым форматированием (Внимание, важная информация).',
+  use: '/warn <текст>',
 
   run
 }
