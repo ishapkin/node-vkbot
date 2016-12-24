@@ -59,7 +59,10 @@ module.exports = {
     },
 
     // Задержка между отправкой сообщений (ms)
-    delay: 3333
+    delay: 3333,
+
+    // Spam protection. If set to true or no set at all bot won't answer to message if it equals to previous.
+    spam_protection: false
   },
 
   // Приложение ВКонтакте, через которое идут запросы к API

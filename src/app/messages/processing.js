@@ -11,6 +11,7 @@
 const apply       = require('./applying');
 const debug       = require('../../lib/simple-debug')(__filename);
 const replaceUrls = require('./parsers/commands/include/replacer');
+const config      = require('../../config');
 
 /**
  * Обработка и помещение сообщения в очередь
@@ -24,16 +25,16 @@ function processUpdates (item) {
   let messageObject = assembleMessage.call(this, item);
   let messageObjectMiddlewared;
 
-  // Нет объекта сообщения. Скорее всего, оно не обработано, т.к. идентично предыдущему, 
+  // Нет объекта сообщения. Скорее всего, оно не обработано, т.к. идентично предыдущему,
   // либо его прислал в беседу заблокированный пользователь
-  if (messageObject === null) 
+  if (messageObject === null)
     return null;
 
   let chatMode = this.getChatMode(messageObject.chatId);
 
-  // Режим беседы отличен от 'default' (или undefined). 
+  // Режим беседы отличен от 'default' (или undefined).
   // Делегируем дальнейшую обработку сообщения другому обработчику
-  if (chatMode && chatMode !== 'default') 
+  if (chatMode && chatMode !== 'default')
     return (require('./chat-modes/' + chatMode)).call(this, messageObject);
 
   // 1. Применяем мидлвэйры
@@ -47,12 +48,12 @@ function processUpdates (item) {
       return checking.call(this, messageObj);
     })
     .then(messageObj => {
-      // После проверки было возвращено значение null. 
+      // После проверки было возвращено значение null.
       // Значит, ничего отвечать не надо, т.к. в беседе есть боты
-      if (messageObj === null) 
+      if (messageObj === null)
         return null;
 
-      // В объекте есть свойство apply === false. В этом случае, применять парсер не будем, 
+      // В объекте есть свойство apply === false. В этом случае, применять парсер не будем,
       // отправляем укзанное сообщение.
       if (messageObj.apply === false) {
         delete messageObj.apply;
@@ -64,7 +65,7 @@ function processUpdates (item) {
     })
     .then(newMessageObj => {
       // Парсер вернул null. Ничего отправлять не придется
-      if (newMessageObj === null) 
+      if (newMessageObj === null)
         return null;
 
       let messToSend = makeMessageObject(messageObject, newMessageObj);
@@ -76,7 +77,7 @@ function processUpdates (item) {
           let position = 4 - messageObjectMiddlewared.permissionsMask;
 
           this.Queue.enqueueTo(position, messToSend, messageObjectMiddlewared.chatId);
-        } else 
+        } else
           this.Queue.enqueue(messToSend, messageObjectMiddlewared.chatId);
       }
     })
@@ -89,7 +90,7 @@ function processUpdates (item) {
  * Обрабатывает обновления, которые были получены через LongPolling.
  * @param  {Array}    item      Элемент массива обновлений.
  * @private
- * 
+ *
  * Функции передаётся контекст (this) класса Messages (./Messages.js)
  */
 function assembleMessage (item) {
@@ -127,11 +128,11 @@ function assembleMessage (item) {
   let prevMessage = (this._conversations[dialogId].lastMessage || '').toLowerCase();
 
   // Участники этой беседы ещё не были загружены, поэтому получим их прямо сейчас
-  if (isMultichat && !this._conversations[mchatId].users) 
+  if (isMultichat && !this._conversations[mchatId].users)
     this._updateChatComp(mchatId);
 
   // Не обрабатываем сообщение, если оно идентично предыдущему
-  if (message.toLowerCase() === prevMessage) 
+  if (config.messages.spam_protection && message.toLowerCase() === prevMessage)
     return null;
 
   // Сохраняем последнее сообщение в диалоге
@@ -139,14 +140,14 @@ function assembleMessage (item) {
 
   // Объект сообщения (для использования в парсерах, миддлвэйрах и командах)
   let messToParse = {
-    _vkapi: this.parent.VKApi, 
-    attachments, 
-    botId: this.parent._botId, 
-    chatId: dialogId, 
-    chatUsers: isMultichat && this._conversations[mchatId].users || null, 
-    fromId, 
-    isMultichat, 
-    message, 
+    _vkapi: this.parent.VKApi,
+    attachments,
+    botId: this.parent._botId,
+    chatId: dialogId,
+    chatUsers: isMultichat && this._conversations[mchatId].users || null,
+    fromId,
+    isMultichat,
+    message,
     messageId
   };
 
@@ -177,7 +178,7 @@ function checking (messageObj) {
 
         // Если === true, значит в чате есть ещё наши боты => выходим.
         // Для этого установим старую дату, чтобы бот моментально вышел
-        if (messageObj.botsInChat === true) 
+        if (messageObj.botsInChat === true)
           checkingDate = new Date('11.11.11');
 
         // Дата уже была ранее установлена, но боты ещё не кикнуты
@@ -190,7 +191,7 @@ function checking (messageObj) {
 
             // Выходим из беседы
             return this.parent.VKApi.call('messages.removeChatUser', {
-                chat_id: messageObj.chatId, 
+                chat_id: messageObj.chatId,
                 user_id: messageObj.botId
               })
               .then(() => {
@@ -205,32 +206,32 @@ function checking (messageObj) {
             return null;
           }
         } else {
-          // Дата не была ранее установлена. Боты только что обнаружены. 
+          // Дата не была ранее установлена. Боты только что обнаружены.
           // Устанавливаем дату и выводим предупреждение
           this._conversations[messageObj.chatId].botsCheckingTime = Date.now();
 
           return {
-            apply: false, 
-            message: 'Оказывается, в беседе помимо меня есть ещё боты..' + 
-                     '\nК сожалению, я не буду отвечать на ваши сообщения, ' + 
-                     'пока в беседе присутствует более одного бота, не считая меня.' + 
-                     '\n\nВам стоит удалить из беседы некоторых ботов.' + 
-                     '\n\nБоты:' + 
-                     '\n' + botIds.map(v => `${chatUsers[v].firstName} (vk.com/id${v})`).join('\n') + 
-                     '\n\nЯ жду 3 минуты, перед тем как уходить.', 
+            apply: false,
+            message: 'Оказывается, в беседе помимо меня есть ещё боты..' +
+                     '\nК сожалению, я не буду отвечать на ваши сообщения, ' +
+                     'пока в беседе присутствует более одного бота, не считая меня.' +
+                     '\n\nВам стоит удалить из беседы некоторых ботов.' +
+                     '\n\nБоты:' +
+                     '\n' + botIds.map(v => `${chatUsers[v].firstName} (vk.com/id${v})`).join('\n') +
+                     '\n\nЯ жду 3 минуты, перед тем как уходить.',
             forward: false
           };
         }
       }
 
-      // Ботов в чате нет, но дата была ранее установлена. Значит, боты были кикнуты. 
+      // Ботов в чате нет, но дата была ранее установлена. Значит, боты были кикнуты.
       // Выводим сообщение о том, что теперь всё хорошо, а также удаляем установленную дату
       if (messageObj.botsInChat === null && this._conversations[messageObj.chatId].botsCheckingTime !== undefined) {
         delete this._conversations[messageObj.chatId].botsCheckingTime;
 
         return {
-          apply: false, 
-          message: 'Отлично! Теперь я буду отвечать на ваши сообщения.', 
+          apply: false,
+          message: 'Отлично! Теперь я буду отвечать на ваши сообщения.',
           forward: false
         };
       }
@@ -248,7 +249,7 @@ function checking (messageObj) {
  * @private
  */
 function makeMessageObject (beforeProcessing, afterProcessing) {
-  if (!afterProcessing) 
+  if (!afterProcessing)
     return null;
 
   // Передана строка, считаем, что это сообщение
@@ -270,31 +271,31 @@ function makeMessageObject (beforeProcessing, afterProcessing) {
   // Прикрепления
   let _attachments = afterProcessing.attachments || '';
 
-  if (_attachments && Array.isArray(_attachments)) 
+  if (_attachments && Array.isArray(_attachments))
     _attachments = _attachments.join(',');
 
   // Пересылаемые сообщения
-  // Если указан параметер "forward_messages", то "forward" учитываться не будет, 
+  // Если указан параметер "forward_messages", то "forward" учитываться не будет,
   // соответственно, исходное сообщение также не будет переслано.
   let _forwards = afterProcessing.forward_messages;
 
-  if (_forwards && Array.isArray(_forwards)) 
+  if (_forwards && Array.isArray(_forwards))
     _forwards = _forwards.join(',');
 
-  if (!_forwards) 
+  if (!_forwards)
     _forwards = afterProcessing.forward ? beforeProcessing.messageId : '';
 
-  // Ни сообщения, ни прикреплений, ни пересылаемых сообщений нет. 
+  // Ни сообщения, ни прикреплений, ни пересылаемых сообщений нет.
   // Значит, ничего отправлять не будем
-  if (!(_message || _attachments || _forwards)) 
+  if (!(_message || _attachments || _forwards))
     return null;
 
-  // Возвращаем собранный объект. 
+  // Возвращаем собранный объект.
   // Не забываем удалить ссылки из сообщения (repalceUrls)
   return {
     [_to]: _toId,
-    message: afterProcessing.replaceUrls === true ? replaceUrls(_message) : _message, 
-    attachment: _attachments, 
+    message: afterProcessing.replaceUrls === true ? replaceUrls(_message) : _message,
+    attachment: _attachments,
     forward_messages: _forwards
   };
 }
