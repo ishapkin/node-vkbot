@@ -83,7 +83,7 @@ class Bot {
     // Bot link
     var thisBot = this;
 
-    if (!this._cond && 1==2) { // @fixme
+    if (!this._cond) {
       return this.VKApi.call('friends.getRequests', {
         'out': 0,
         'need_viewed': 1,
