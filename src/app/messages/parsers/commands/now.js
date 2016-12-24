@@ -18,7 +18,7 @@ const EMOJI_POSTFIX = '&#8419;'; // Постфикс для Emoji-смайлов
 function formatDate (digits) {
   let digitStr = digits.toString();
 
-  if (digitStr.length === 1) 
+  if (digitStr.length === 1)
     digitStr = '0' + digitStr;
 
   // Конвертируем простые цифры в Emoji-цифры, добавляя Emoji-постфикс.
@@ -36,6 +36,10 @@ function formatDate (digits) {
 function run (arg, callback) {
   let now = new Date();
 
+  // Adjust offset of time using UTC+offset.
+  // @fixme: Set offset in config
+  now.setHours(now.getUTCHours() + 3);
+
   let hours   = formatDate(now.getHours());
   let minutes = formatDate(now.getMinutes());
   let weekday = WEEKDAYS[now.getDay()];
@@ -47,13 +51,13 @@ function run (arg, callback) {
 }
 
 module.exports = {
-  enabled: true, 
-  unique:  false, 
-  mask: 0, 
+  enabled: true,
+  unique:  false,
+  mask: 0,
 
-  aliases:     ['время', 'сейчас'], 
-  description: 'Присылает текущую дату и время.', 
-  use: '/now', 
+  aliases:     ['время', 'сейчас'],
+  description: 'Присылает текущую дату и время.',
+  use: '/now',
 
   run
 }
