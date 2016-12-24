@@ -43,8 +43,10 @@ function run (arg, callback) {
         let index = Math.round(Math.random() * (phrases.length - 1));
         phrase = phrases[index];
 
-        // Cache even static phrases
-        redis.sadd('commands:vjuh:phrasecache', phrase);
+        // Cache once all static phrases
+        for (var i=0; i<phrases.length; i++) {
+          redis.sadd('commands:vjuh:phrasecache', phrases[i]);
+        }
       }
       else {
         // We consider that phrase is trimmed and truncated already. No need additional processing.
