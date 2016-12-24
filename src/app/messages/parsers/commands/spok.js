@@ -4,7 +4,6 @@
  * Module dependencies
  * @private
  */
-const prequest = require('request-promise');
 
 /**
  * Local constants
