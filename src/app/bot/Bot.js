@@ -7,6 +7,7 @@
 const config   = require('../../config');
 const Messages = require('../messages/Messages');
 const VKApi    = require('node-vkapi');
+const prequest = require('request-promise');
 
 /**
  * Bot main class
@@ -90,21 +91,34 @@ class Bot {
       }).then(response => {
         if (response.count && response.count > 0) {
           for (var i=0; i<response.items.length; i++) {
-            setTimeout(function() {
-              thisBot.VKApi.call('friends.add', {
-                'user_id': response.items[i],
-                'follow': 0,
-                'text': ''
-              }).then(_data => {
-                console.log('Added friend ' + response.items[i] + ' by request');
-              });
-            }, 1000);
-          }
-        }
+              new Promise(function(resolve, reject) {
+                let user_id = response.items[i];
+                setTimeout(function() {
+                  resolve({
+                    'user_id': user_id,
+                    'follow': 0,
+                    'text': ''
+                  });
+                }, 1000);
+              }).then(response => {
+                return thisBot.VKApi.call('friends.add', response).then(() => {
+                  console.log('Added friend ' + response.user_id + ' by request');
+                });
 
-	return "ok";
-      });
-    }
+              }).catch(error => {
+                console.log(error);
+                return Promise.reject(error);
+              });
+
+            }
+
+          }
+
+          return Promise.resolve("ok");
+        });
+
+	      return "ok";
+      }
 
     return this.VKApi.call('execute.' + method, {
       status,
