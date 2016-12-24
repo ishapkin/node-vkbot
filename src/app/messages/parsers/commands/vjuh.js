@@ -15,12 +15,12 @@ const SERVICE_URL = 'http://risovach.ru/generator/vzhuh_1715393';
 
 const MAX_LENGTH = 60;
 
-function sendAnswer(arg, phrase, cb) {
+function getAnswer(arg, phrase) {
   let argObj  = arg.source;
   let VK      = argObj._vkapi;
   let redis   = redisDb.getRedis();
 
-  return redis.hgetAsync('commands:vjuh:phrase', phrase).then(function (reply) {
+  return redis.hget('commands:vjuh:phrase', phrase).then(function (reply) {
     let premise;
     // @fixme: Remove when convert string to binar buffer properly.
     //if (true || reply === null) {
@@ -52,7 +52,6 @@ function sendAnswer(arg, phrase, cb) {
 
       // let img_stream =  Buffer.from( img_bytes, 'binary' );
 
-      redis.quit();
       return VK.upload('photo_pm', {
         // Данные для загрузки
         data: {
@@ -65,13 +64,19 @@ function sendAnswer(arg, phrase, cb) {
       });
     })
     .then(response => {
-      return cb(null, {
-        attachments: 'photo' + response[0].owner_id + '_' + response[0].id
-      });
+      return {
+        error_message: null,
+        answer: {
+          attachments: 'photo' + response[0].owner_id + '_' + response[0].id
+        }
+      };
     })
     // Обрабатываем возникающие ошибки
     .catch(error => {
-      return cb(error, 'Произошла неизвестная ошибка :(');
+      return {
+        error_message: error,
+        answer: 'Произошла неизвестная ошибка :('
+      }
     });
   });
 }
@@ -97,7 +102,7 @@ function run (arg, callback) {
 
   let phrase = argText ? argText.trim() : null;
   if (!argText) {
-    return redis.srandmemberAsync('commands:vjuh:phrasecache').then(function(reply) {
+    return redis.srandmember('commands:vjuh:phrasecache').then(function(reply) {
       if (reply === null) {
         let index = Math.round(Math.random() * (phrases.length - 1));
         phrase = phrases[index];
@@ -112,8 +117,10 @@ function run (arg, callback) {
         phrase = reply;
       }
 
-      redis.quit();
-      return sendAnswer(arg, phrase, callback);
+      return getAnswer(arg, phrase);
+    })
+    .then(response => {
+      return callback(response.error_message, response.answer);
     });
   }
   else {
@@ -123,7 +130,9 @@ function run (arg, callback) {
     // Cache phrase for future usage
     redis.sadd('commands:vjuh:phrasecache', phrase);
 
-    return sendAnswer(arg, phrase, callback);
+    return getAnswer(arg, phrase).then(response => {
+      return callback(response.error_message, response.answer);
+    });
   }
 }
 

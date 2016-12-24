@@ -25,7 +25,7 @@
     "cheerio": "^0.20.0",
     "node-json-db": "^0.7.3",
     "node-vkapi": "^2.0.3",
-    "redis": "*",
+    "ioredis": "*",
     "pm2": "^1.0.0",
     "request-promise": "^2.0.0",
     "timeago.js": "^2.0.4",

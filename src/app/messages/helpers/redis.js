@@ -4,20 +4,16 @@
  * Module dependencies.
  * @private
  */
-const redis     = require('redis');
-const bluebird  = require('bluebird');
+const Redis     = require('ioredis');
 const config  = require('../../../config');
 
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
-
 /**
- * @return RedisClient
+ * @return Redis
  */
 function getRedis() {
   let hRedisClient = null; // Initialize singleton
   //if (hRedisClient === null) {
-    hRedisClient = redis.createClient(config.redis);
+    hRedisClient = new Redis(config.redis);
     hRedisClient.on("error", function (err) {
       console.log("Error " + err);
       exit(1);
