@@ -37,6 +37,12 @@ module.exports = function (messageObj) {
     fn: function appealParser (cb) {
       let message = messageObj.message;
 
+      // Устанавливаем статус набора текста "<Бот> печатает..."
+      messageObj._vkapi.call('messages.setActivity', {
+        type: 'typing',
+        [isMultichat ? 'peer_id' : 'user_id']: isMultichat ? (messageObj.chatId + 2000000000) : messageObj.fromId
+      }).then(response => null).catch(error => null);
+
       /**
        * Пытаемся вызывать команды, вызванные в "разговорной форме" (Бот, <команда>).
        * * Только для бесед.
@@ -56,13 +62,6 @@ module.exports = function (messageObj) {
         // Обновляем сообщение для применения к парсеру команд.
         messageObj.message = '/' + message;
       }
-
-
-      // Устанавливаем статус набора текста "<Бот> печатает..."
-      messageObj._vkapi.call('messages.setActivity', {
-        type: 'typing',
-        [isMultichat ? 'peer_id' : 'user_id']: isMultichat ? (messageObj.chatId + 2000000000) : messageObj.fromId
-      }).then(response => null).catch(error => null);
 
       // Вызываем commandParser, если сообщение пришло в беседе,
       // иначе - фейковую функцию, которая вернёт null.

@@ -15,6 +15,61 @@ const SERVICE_URL = 'http://risovach.ru/generator/vzhuh_1715393';
 
 const MAX_LENGTH = 60;
 
+function sendAnswer(arg, phrase, cb) {
+  let argObj  = arg.source;
+  let VK      = argObj._vkapi;
+  let redis   = redisDb.getRedis();
+
+  return redis.hgetAsync('commands:vjuh:phrase', phrase).then(function (err, reply) {
+    let premise;
+    // @fixme: Remove when convert string to binar buffer properly.
+    if (true || reply === null) {
+      premise = prequest.post(SERVICE_URL, {
+        form: {
+          zdata1: 'Вжух!!!',
+          zdata2: phrase
+        },
+        encoding: null
+      });
+    }
+    else {
+      premise = new Promise(function (resolve, reject) {
+        resolve(reply);
+      });
+    }
+
+    premise.then(img_bytes => {
+      if (reply === null) {
+        redis.hset('commands:vjuh:phrase', phrase, img_bytes);
+      }
+
+      // let img_stream =  Buffer.from( img_bytes, 'binary' );
+
+      return VK.upload('photo_pm', {
+        // Данные для загрузки
+        data: {
+          value: img_bytes,
+          options: {
+            filename: `photo_${Date.now()}.jpg`,
+            contentType: 'image/jpg'
+          }
+        }
+      });
+    })
+    .then(response => {
+      return cb(null, {
+        attachments: 'photo' + response[0].owner_id + '_' + response[0].id
+      });
+    })
+    // Обрабатываем возникающие ошибки
+    .catch(error => {
+      return cb(error, 'Произошла неизвестная ошибка :(');
+    });
+
+    return premise;
+  });
+}
+
 /**
  * Run command
  * @param  {Arguments}  arg
@@ -23,8 +78,6 @@ const MAX_LENGTH = 60;
  */
 function run (arg, callback) {
   let argText = arg.fullText;
-  let argObj  = arg.source;
-  let VK      = argObj._vkapi;
   let redis   = redisDb.getRedis();
 
   // Static phrases are always here.
@@ -38,7 +91,7 @@ function run (arg, callback) {
 
   let phrase = argText ? argText.trim() : null;
   if (!argText) {
-    redis.srandmember('commands:vjuh:phrasecache', function(err, reply) {
+    return redis.srandmemberAsync('commands:vjuh:phrasecache').then(function(err, reply) {
       if (reply === null) {
         let index = Math.round(Math.random() * (phrases.length - 1));
         phrase = phrases[index];
@@ -53,7 +106,7 @@ function run (arg, callback) {
         phrase = reply;
       }
 
-      return sendAnswer(phrase);
+      return sendAnswer(arg, phrase, callback);
     });
   }
   else {
@@ -63,57 +116,7 @@ function run (arg, callback) {
     // Cache phrase for future usage
     redis.sadd('commands:vjuh:phrasecache', phrase);
 
-    return sendAnswer(phrase);
-  }
-
-
-  function sendAnswer(phrase) {
-    redis.hget('commands:vjuh:phrase', phrase, function (err, reply) {
-      let premise;
-      // @fixme: Remove when convert string to binar buffer properly.
-      if (true || reply === null) {
-        premise = prequest.post(SERVICE_URL, {
-          form: {
-            zdata1: 'Вжух!!!',
-            zdata2: phrase
-          },
-          encoding: null
-        });
-      }
-      else {
-        premise = new Promise(function (resolve, reject) {
-          resolve(reply);
-        });
-      }
-
-      premise.then(img_bytes => {
-          if (reply === null) {
-            redis.hset('commands:vjuh:phrase', phrase, img_bytes);
-          }
-
-          // let img_stream =  Buffer.from( img_bytes, 'binary' );
-
-          return VK.upload('photo_pm', {
-            // Данные для загрузки
-            data: {
-              value: img_bytes,
-              options: {
-                filename: `photo_${Date.now()}.jpg`,
-                contentType: 'image/jpg'
-              }
-            }
-          });
-        })
-        .then(response => {
-          return callback(null, {
-            attachments: 'photo' + response[0].owner_id + '_' + response[0].id
-          });
-        })
-        // Обрабатываем возникающие ошибки
-        .catch(error => {
-          return callback(error, 'Произошла неизвестная ошибка :(');
-        });
-    });
+    return sendAnswer(arg, phrase, callback);
   }
 }
 

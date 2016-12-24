@@ -4,9 +4,13 @@
  * Module dependencies.
  * @private
  */
-let redis     = require('redis');
+const redis     = require('redis');
+const bluebird  = require('bluebird');
 const config  = require('../../../config');
 let hRedisClient     = null; // Initialize singleton
+
+bluebird.promisifyAll(redis.RedisClient.prototype);
+bluebird.promisifyAll(redis.Multi.prototype);
 
 /**
  * @return RedisClient
