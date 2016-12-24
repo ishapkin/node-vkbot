@@ -83,8 +83,7 @@ module.exports = function (messageObj) {
             user: config.api.cleverbot,
             message: {
               text:  message.slice(0, 250)
-            },
-            enabled: (config.api.cleverbot.enabled ? true : false)
+            }
           })
           .then(cleverAns => {
             let ansMess = cleverAns.response.trim();

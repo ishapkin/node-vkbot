@@ -20,31 +20,39 @@ function sendAnswer(arg, phrase, cb) {
   let VK      = argObj._vkapi;
   let redis   = redisDb.getRedis();
 
-  return redis.hgetAsync('commands:vjuh:phrase', phrase).then(function (err, reply) {
+  return redis.hgetAsync('commands:vjuh:phrase', phrase).then(function (reply) {
     let premise;
     // @fixme: Remove when convert string to binar buffer properly.
-    if (true || reply === null) {
-      premise = prequest.post(SERVICE_URL, {
-        form: {
-          zdata1: 'Вжух!!!',
-          zdata2: phrase
-        },
-        encoding: null
-      });
-    }
-    else {
-      premise = new Promise(function (resolve, reject) {
-        resolve(reply);
-      });
-    }
+    //if (true || reply === null) {
+    //  premise = prequest.post(SERVICE_URL, {
+    //    form: {
+    //      zdata1: 'Вжух!!!',
+    //      zdata2: phrase
+    //    },
+    //    encoding: null
+    //  });
+    //}
+    //else {
+    //  premise = new Promise(function (resolve, reject) {
+    //    resolve(reply);
+    //  });
+    //}
 
-    premise.then(img_bytes => {
+    return prequest.post(SERVICE_URL, {
+      form: {
+        zdata1: 'Вжух!!!',
+        zdata2: phrase
+      },
+      encoding: null
+    })
+    .then(img_bytes => {
       if (reply === null) {
         redis.hset('commands:vjuh:phrase', phrase, img_bytes);
       }
 
       // let img_stream =  Buffer.from( img_bytes, 'binary' );
 
+      redis.quit();
       return VK.upload('photo_pm', {
         // Данные для загрузки
         data: {
@@ -65,8 +73,6 @@ function sendAnswer(arg, phrase, cb) {
     .catch(error => {
       return cb(error, 'Произошла неизвестная ошибка :(');
     });
-
-    return premise;
   });
 }
 
@@ -91,7 +97,7 @@ function run (arg, callback) {
 
   let phrase = argText ? argText.trim() : null;
   if (!argText) {
-    return redis.srandmemberAsync('commands:vjuh:phrasecache').then(function(err, reply) {
+    return redis.srandmemberAsync('commands:vjuh:phrasecache').then(function(reply) {
       if (reply === null) {
         let index = Math.round(Math.random() * (phrases.length - 1));
         phrase = phrases[index];
@@ -106,6 +112,7 @@ function run (arg, callback) {
         phrase = reply;
       }
 
+      redis.quit();
       return sendAnswer(arg, phrase, callback);
     });
   }

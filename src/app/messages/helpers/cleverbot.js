@@ -75,11 +75,11 @@ function encodeParams (params) {
  * @return {Promise} => return of parseResponse()
  * @public
  */
-function send ({ user = {}, message = {}, enabled = false}) {
+function send ({ user = {}, message = {} }) {
   let requestUrl    = REQUEST_URL;
   let requestParams = {};
 
-  if (!enabled || !user.username || !user.password)
+  if (!user.username || !user.password)
     return Promise.reject(new Error('"user" is required.'));
 
   if (!message || !message.text)
