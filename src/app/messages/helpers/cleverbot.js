@@ -17,19 +17,19 @@ const REQUEST_URL_AU = 'http://cleverbot.existor.com/webservicexml_ais_';
  * @private
  */
 function parseResponse (response) {
-  if (response && response.length === 0) 
+  if (response && response.length === 0)
     return Promise.reject(new Error('"response" is empty.'));
 
   return new Promise((resolve, reject) => {
     xml2js.parseString(response, (err, res) => {
-      if (err) 
+      if (err)
         return reject(err);
 
       let rootObj   = res.webservicexml.session[0];
       let resultTxt = '';
       let resultObj = {};
 
-      for (let i = 0, keys = Object.keys(rootObj), len = keys.length; i < len; i++) 
+      for (let i = 0, keys = Object.keys(rootObj), len = keys.length; i < len; i++)
         resultObj[keys[i]] = rootObj[keys[i]][0];
 
       resultTxt = resultObj.response;
@@ -37,7 +37,7 @@ function parseResponse (response) {
       delete resultObj.response;
 
       resolve({
-        response: resultTxt, 
+        response: resultTxt,
         state:    resultObj
       });
     });
@@ -75,14 +75,14 @@ function encodeParams (params) {
  * @return {Promise} => return of parseResponse()
  * @public
  */
-function send ({ user = {}, message = {} }) {
+function send ({ user = {}, message = {}, enabled = false}) {
   let requestUrl    = REQUEST_URL;
   let requestParams = {};
 
-  if (!user.username || !user.password) 
+  if (!enabled || !user.username || !user.password)
     return Promise.reject(new Error('"user" is required.'));
 
-  if (!message || !message.text) 
+  if (!message || !message.text)
     return Promise.reject(new Error('"message.text" can not be empty.'));
 
   // Основные параметры запроса
@@ -99,7 +99,7 @@ function send ({ user = {}, message = {} }) {
   }
 
   return prequest.post({
-      url:  requestUrl, 
+      url:  requestUrl,
       body: encodeParams(requestParams)
     })
     .then(response => parseResponse(response));

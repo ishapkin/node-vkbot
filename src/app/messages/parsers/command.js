@@ -11,7 +11,7 @@ module.exports = function (messageObj) {
 
   return {
     // Условие, при котором этот парсер применится к сообщению
-    cond: /^\//.test(messageObj.message), 
+    cond: /^(\/|\.)/.test(messageObj.message),
 
     // Сама функция парсера.
     fn: commandParser.call(self, messageObj)

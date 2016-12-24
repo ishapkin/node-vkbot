@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Парсер команд. Вынесен в отдельный файл для того, чтобы мог легко использоваться в 
+ * Парсер команд. Вынесен в отдельный файл для того, чтобы мог легко использоваться в
  * парсере обращений к боту.
  */
 
@@ -19,13 +19,13 @@ const Arguments = require('./helpers/arg-parser');
  */
 const PRMS_LEVELS = [
   // 0: все юзеры
-  null, 
+  null,
 
   // 1: пригласившие бота
-  'Команда доступна тем, кто пожертвовал на развитие ботов, или является создателем беседы, или пригласил бота в беседу.', 
+  'Команда доступна тем, кто пожертвовал на развитие ботов, или является создателем беседы, или пригласил бота в беседу.',
 
   // 2: создатели бесед
-  'Команда доступна тем, кто пожертвовал на развитие ботов, или является создателем беседы.', 
+  'Команда доступна тем, кто пожертвовал на развитие ботов, или является создателем беседы.',
 
   // 3: vip (пожертвовавшие)
   'Команда доступна тем, кто пожертвовал на развитие ботов.'
@@ -49,7 +49,7 @@ function commandParser (messageObj) {
       // Проверяем, существует ли команда.
       if (current.command === cmd || ~current.aliases.indexOf(cmd)) {
         // Проверяем соответствие уникальности команды.
-        if (!current.unique || current.unique === convType) 
+        if (!current.unique || current.unique === convType)
           cmdToUse = current;
 
         break;
@@ -57,23 +57,23 @@ function commandParser (messageObj) {
     }
 
     // Такой команды не существует или её нельзя использовать, ничего не делаем.
-    if (!cmdToUse) 
+    if (!cmdToUse)
       return cb(null);
 
     // Объект, который будет возвращаться, если нужно вывести помощь по команде.
     let helpObject = {
-      message: `${(cmdToUse.use || '')}\n\n${cmdToUse.description}${cmdToUse.aliases.length > 0 ? ('\n\nПсевдонимы команды: /' + cmdToUse.aliases.join(', /')) : ''}`.trim(), 
+      message: `${(cmdToUse.use || '')}\n\n${cmdToUse.description}${cmdToUse.aliases.length > 0 ? ('\n\nПсевдонимы команды: /' + cmdToUse.aliases.join(', /')) : ''}`.trim(),
       forward: messageObj.isMultichat
     };
 
     // Если первый аргумент === '/?', то выводим помощь по команде.
-    if (args.firstWord === '/?') 
+    if (args.firstWord === '/?' || args.firstWord === '.?')
       return cb(helpObject);
 
     // Недостаточно прав для использования команды.
     if (messageObj.permissionsMask < cmdToUse.mask) {
       return cb({
-        message: 'Недостаточно прав для использования команды.\n\n' + PRMS_LEVELS[cmdToUse.mask], 
+        message: 'Недостаточно прав для использования команды.\n\n' + PRMS_LEVELS[cmdToUse.mask],
         forward: messageObj.isMultichat
       });
     }
@@ -82,7 +82,7 @@ function commandParser (messageObj) {
     // Передаём ей контекст приложения (Application class).
     return cmdToUse.run.call(self, args, (error, result) => {
       // При выполнении команды возникла некритичная ошибка.
-      if (error === null && !result) 
+      if (error === null && !result)
         return cb(null);
 
       // При выполнении команды возникла критичная ошибка. Выводим её.
@@ -92,7 +92,7 @@ function commandParser (messageObj) {
       }
 
       // Нечего отправлять во ВКонтакте.
-      if (!result) 
+      if (!result)
         return cb(null);
 
       // "Достаём" сообщение, которое предстоит отправить.
@@ -100,14 +100,14 @@ function commandParser (messageObj) {
 
       // Объект сообщения, который будет возвращён.
       let returnObject  = {
-        message: messageToSend, 
-        attachments: result.attachments, 
-        forward_messages: result.forward_messages || null, 
+        message: messageToSend,
+        attachments: result.attachments,
+        forward_messages: result.forward_messages || null,
         forward: result.forward !== undefined ? result.forward : messageObj.isMultichat
       };
 
       // Указываем, в каких командах удалять ссылки
-      if (~['hf', 'joke', 'who'].indexOf(cmdToUse.command)) 
+      if (~['hf', 'joke', 'who'].indexOf(cmdToUse.command))
         returnObject.replaceUrls = true;
 
       // Ошибок нет. Возвращаем результат работы.

@@ -83,20 +83,22 @@ class Bot {
     // Bot link
     var thisBot = this;
 
-    if (!this._cond) {
+    if (!this._cond && 1==2) { // @fixme
       return this.VKApi.call('friends.getRequests', {
         'out': 0,
         'need_viewed': 1,
       }).then(response => {
         if (response.count && response.count > 0) {
           for (var i=0; i<response.items.length; i++) {
-            thisBot.VKApi.call('friends.add', {
-              'user_id': response.items[i],
-              'follow': 0,
-              'text': ''
-            }).then(_data => {
-              console.log('Added friend ' + response.items[i] + ' by request');
-            });
+            setTimeout(function() {
+              thisBot.VKApi.call('friends.add', {
+                'user_id': response.items[i],
+                'follow': 0,
+                'text': ''
+              }).then(_data => {
+                console.log('Added friend ' + response.items[i] + ' by request');
+              });
+            }, 1000);
           }
         }
 
