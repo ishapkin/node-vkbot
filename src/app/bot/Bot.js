@@ -7,7 +7,6 @@
 const config   = require('../../config');
 const Messages = require('../messages/Messages');
 const VKApi    = require('node-vkapi');
-const prequest = require('request-promise');
 
 /**
  * Bot main class
@@ -85,9 +84,10 @@ class Bot {
     var thisBot = this;
 
     if (!this._cond) {
+      // Get incoming friend add requests
       return this.VKApi.call('friends.getRequests', {
         'out': 0,
-        'need_viewed': 1,
+        'need_viewed': 0, // @todo: Configure via config file
       }).then(response => {
         if (response.count && response.count > 0) {
           for (var i=0; i<response.items.length; i++) {

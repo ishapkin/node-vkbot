@@ -28,6 +28,12 @@ module.exports = {
       secretAccessKey: '<secret_key>'
     },
 
+    // Yandex services keys
+    yandex: {
+      // API key from yandex speech.kit: https://tech.yandex.ru/speechkit/cloud/doc/dg/concepts/speechkit-dg-tts-docpage/
+      speech_cloud: '',
+    },
+
     // openweathermap.com
     weather: '<api_key>'
   },

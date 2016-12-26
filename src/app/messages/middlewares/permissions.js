@@ -34,20 +34,20 @@ function middleware (messageObj) {
 
   if (currentChatUser) {
     // Пригласивший бота
-    if (currentChatUser.botInviter) 
+    if (currentChatUser.botInviter)
       permissionsMask = 1;
 
     // Создатель беседы
-    if (currentChatUser.chatAdmin) 
+    if (currentChatUser.chatAdmin)
       permissionsMask = 2;
   }
 
   // VIP-пользователь
-  if (userVipData === 'all' || Array.isArray(userVipData) && userVipData.includes(messageObj.botId)) 
+  if (userVipData === 'all' || Array.isArray(userVipData) && userVipData.includes(messageObj.botId))
     permissionsMask = 3;
 
   // Администратор
-  if (~admins.indexOf(messageObj.fromId)) 
+  if (~admins.indexOf(messageObj.fromId) || ~admins.indexOf(String(messageObj.fromId)))
     permissionsMask = 4;
 
   return {
