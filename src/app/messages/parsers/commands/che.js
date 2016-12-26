@@ -10,10 +10,10 @@ const prequest = require('request-promise');
  * Local constants
  * @private
  */
-const PUBLIC_INFO = PUBLIC_INFO !== undefined ? PUBLIC_INFO : {
-  //id: -123, // id has priority
-  domain: '21jqofa'
-};
+// const PUBLIC_INFO = {
+//   //id: -123, // id has priority
+//   domain: '21jqofa'
+// };
 
 /**
  * Run command
@@ -26,6 +26,9 @@ function run (arg, callback) {
   let firstWord = arg.firstWord;
   let argObj    = arg.source;
   let VK        = argObj._vkapi;
+  
+  // Get public info from exports. This can be defined in other modules
+  const PUBLIC_INFO = this.params.public_info;
 
   // Subsets with multipliers
   let subsets = {
@@ -115,6 +118,12 @@ function run (arg, callback) {
 }
 
 module.exports = {
+  params: {
+    public_info: {
+      //id: -123, // id has priority
+      domain: '21jqofa'
+    }
+  },
   enabled: true,
   unique:  false,
   mask: 0,
