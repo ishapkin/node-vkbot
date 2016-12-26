@@ -5,11 +5,12 @@
  * @private
  */
 const prequest = require('request-promise');
+
 /**
  * Local constants
  * @private
  */
-const PUBLIC_INFO = {
+const PUBLIC_INFO = PUBLIC_INFO !== undefined ? PUBLIC_INFO : {
   //id: -123, // id has priority
   domain: '21jqofa'
 };
@@ -78,7 +79,7 @@ function run (arg, callback) {
     let items_per_subset = Math.floor(count / 4);
 
     // We consider that maximum items to get from public is 0.5% of items per subset
-    let items_max_count = items_per_subset * 0.005; // @fixme: Move to config
+    let items_max_count = items_per_subset * 0.02; // @fixme: Move to config
 
     // Find random min and max value to use
     let offset_min = items_per_subset * (subsets[subset] - 1);
