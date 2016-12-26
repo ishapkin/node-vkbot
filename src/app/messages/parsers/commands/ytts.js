@@ -14,7 +14,7 @@ const service_url = 'https://tts.voicetech.yandex.net/generate'; //?format=mp3&l
  * @private
  */
 const MIN_LENGTH     = 5;
-const MAX_LENGTH     = 1000;
+const MAX_LENGTH     = 900; // Limit is 2KB (1024 Unicode characters)
 const MAX_LENGTH_PRO = MAX_LENGTH;
 const RU_CHAR_CODES  = [1072, 1103, 1105]; // а, я, ё (lowercase)
 const DEFAULTS       = {
@@ -138,7 +138,7 @@ function run (arg, callback) {
   }
 
   // Убираем озвучку перевода на новую строку и обрезаем текст
-  argText = argText.replace(/<br>/g, ' ').slice(0, limit);
+  argText = argText.replace(/<br>/g, "\n").slice(0, limit);
 
   // В тексте русских символов меньше 50%? Озвучиваем английским голосом
   if (!detectRULang(argText))

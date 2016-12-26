@@ -11,7 +11,7 @@ const redisDb     = require('../../helpers/redis');
  * Local constants
  * @private
  */
-const MAX_COUNT = 100;
+const MAX_COUNT = 30;
 
 /**
  * Run command
@@ -29,7 +29,7 @@ function run (arg, callback) {
     }
     else {
       message = 'Вжухов в базе: ' + String(reply.length) + "\n";
-      message += reply.slice(0, MAX_COUNT-1).join("\n");
+      message += String(reply.slice(0, MAX_COUNT-1).join("\n")).substr(0, 1000);
     }
 
     return Promise.resolve({
