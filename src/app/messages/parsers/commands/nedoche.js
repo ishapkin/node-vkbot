@@ -3,7 +3,7 @@
  * Module dependencies
  * @private
  */
- const che = require('che.js');
+ const che = require('./che.js');
  
 /**
  * Local constants

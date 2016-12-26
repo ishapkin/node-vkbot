@@ -10,10 +10,10 @@ const prequest = require('request-promise');
  * Local constants
  * @private
  */
-// const PUBLIC_INFO = {
-//   //id: -123, // id has priority
-//   domain: '21jqofa'
-// };
+const PUBLIC_INFO_DEFAULT = {
+   //id: -123, // id has priority
+   domain: '21jqofa'
+};
 
 /**
  * Run command
@@ -28,7 +28,7 @@ function run (arg, callback) {
   let VK        = argObj._vkapi;
   
   // Get public info from exports. This can be defined in other modules
-  const PUBLIC_INFO = this.params.public_info;
+  const PUBLIC_INFO = (this.params && this.params.public_info) || PUBLIC_INFO_DEFAULT;
 
   // Subsets with multipliers
   let subsets = {
@@ -82,14 +82,14 @@ function run (arg, callback) {
     let items_per_subset = Math.floor(count / 4);
 
     // We consider that maximum items to get from public is 0.5% of items per subset
-    let items_max_count = items_per_subset * 0.02; // @fixme: Move to config
+    let items_max_count = items_per_subset * 0.01; // @fixme: Move to config
 
     // Find random min and max value to use
     let offset_min = items_per_subset * (subsets[subset] - 1);
     // For newest items we add count of remaining items if there are some
     let offset_max = items_per_subset * subsets[subset] + ((subsets[subset] == 1) ? count % 4 : 0);
 
-    params.count = items_max_count <= 100 ? items_max_count : 100; // Adjust maximum items to get (VK api limit)
+    params.count = items_max_count <= 50 ? items_max_count : 50; // Adjust maximum items to get (VK api limit)
     params.offset = Math.round(Math.random() * (offset_max - offset_min)) + offset_min;
     return new Promise(function(resolve, reject) {
       setTimeout(function() {
