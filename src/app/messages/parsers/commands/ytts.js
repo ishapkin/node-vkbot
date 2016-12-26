@@ -96,12 +96,13 @@ function createSpeech (text, lang, speaker) {
     uri: service_url,
     // ?format=mp3&lang=ru-RU&speaker=oksana&key=8aaaf977-d6a6-4663-9838-beaf5c7b3fd4&emotion=evil&speed=1';
     qs: {
+      text: text,
       format: 'mp3',
       lang: DEFAULTS.voices[lang].langcode,
       speaker: speaker,
-      key: apiKeys.yandex.speech_cloud,
+      key: apiKeys.speech_cloud,
       emotion: 'neutral', // @todo: Configurable via parameters|switchers
-      speed: 1 // @todo: Configurable via parameters|switchers
+      speed: 0.7 // @todo: Configurable via parameters|switchers
     },
 
     // Кодировка null обязательна, т.к. работаем с бинарным контентом

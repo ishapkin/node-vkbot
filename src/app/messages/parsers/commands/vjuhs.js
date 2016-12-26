@@ -29,7 +29,7 @@ function run (arg, callback) {
     }
     else {
       message = 'Вжухов в базе: ' + String(reply.length) + "\n";
-      message += Array(reply).slice(0, MAX_COUNT-1).join("\n");
+      message += reply.slice(0, MAX_COUNT-1).join("\n");
     }
 
     return Promise.resolve({
