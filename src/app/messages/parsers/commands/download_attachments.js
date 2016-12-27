@@ -21,9 +21,9 @@ function run (arg, callback) {
   let argObj    = arg.source;
   let VK        = argObj._vkapi;
 
-  let filename = firstWord.substr(0, 32);
+  let filename = firstWord ? String(firstWord).substr(0, 32) : null;
   if (argObj.attachments && argObj.attachments.fwd) {
-    let fwd_msg_ids = [argObj.attachments.fwd.split(',')[0].split('_')[1]]; // @fixme: Support multiple ids
+    //let fwd_msg_ids = [argObj.attachments.fwd.split(',')[0].split('_')[1]]; // @fixme: Support multiple ids
 
     return VK.call('messages.getById', {
       message_ids: argObj.messageId,
