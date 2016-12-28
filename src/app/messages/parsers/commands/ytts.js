@@ -7,6 +7,7 @@
 const apiKeys  = require('../../../../config').api.yandex;
 const prequest = require('request-promise');
 const service_url = 'https://tts.voicetech.yandex.net/generate'; //?format=mp3&lang=ru-RU&speaker=oksana&key=8aaaf977-d6a6-4663-9838-beaf5c7b3fd4&emotion=evil&speed=1';
+const htmlent = require('htmlentities');
 // const delayed  = require('delayed');
 
 /**
@@ -121,6 +122,9 @@ function run (arg, callback) {
   let firstWord = arg.firstWord;
   let argObj    = arg.source;
   let VK        = argObj._vkapi;
+
+  // Ensure we don't have any QUOT QUOT and other html entities
+  argText = htmlent.decode(argText);
 
   let gender = 'male';
   let lang   = 'ru';

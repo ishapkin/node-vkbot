@@ -7,6 +7,7 @@
 const apiKeys  = require('../../../../config').api.ivona;
 const aws4     = require('aws4');
 const prequest = require('request-promise');
+const htmlent = require('htmlentities');
 // const delayed  = require('delayed');
 
 /**
@@ -18,21 +19,21 @@ const MAX_LENGTH     = 1000;
 const MAX_LENGTH_PRO = MAX_LENGTH;
 const RU_CHAR_CODES  = [1072, 1103, 1105]; // а, я, ё (lowercase)
 const DEFAULTS       = {
-  femaleSwitchers: ['-f', '-female', '-ж'], 
+  femaleSwitchers: ['-f', '-female', '-ж'],
   ivona: {
     ru: {
-      male: { Name: 'Maxim', Language: 'ru-RU', Gender: 'Male' }, 
+      male: { Name: 'Maxim', Language: 'ru-RU', Gender: 'Male' },
       female: { Name: 'Tatyana', Language: 'ru-RU', Gender: 'Female' }
     },
     en: {
-      male: { Name: 'Brian', Language: 'en-GB', Gender: 'Male' }, 
+      male: { Name: 'Brian', Language: 'en-GB', Gender: 'Male' },
       female: { Name: 'Amy', Language: 'en-GB', Gender: 'Female' }
     }
   }
 };
 
 /**
- * Определяет, на русском ли языке написан переданный текст. 
+ * Определяет, на русском ли языке написан переданный текст.
  * Считается, что язык текста - русский, если букв алфавита русского языка в тексте >= 50%.
  * [*] При расчёте удаляются все спец. символы, пробелы и цифры из строки.
  * @param  {String}  text
@@ -40,7 +41,7 @@ const DEFAULTS       = {
  * @private
  */
 function detectRULang (text) {
-  if (typeof text !== 'string') 
+  if (typeof text !== 'string')
     return false;
 
   // Удаляем спец. символы, пробелы и цифры.
@@ -50,13 +51,13 @@ function detectRULang (text) {
   let ruSymbCount = 0;
 
   // В тексте одни лишь спец. символы, пробелы и цифры => считаем его русским.
-  if (textLength === 0) 
+  if (textLength === 0)
     return true;
 
   for (let i = 0; i < textLength; i++) {
     let symCode = text[i].charCodeAt(0);
 
-    if (symCode >= RU_CHAR_CODES[0] && symCode <= RU_CHAR_CODES[1] || symCode === RU_CHAR_CODES[2]) 
+    if (symCode >= RU_CHAR_CODES[0] && symCode <= RU_CHAR_CODES[1] || symCode === RU_CHAR_CODES[2])
       ruSymbCount++;
   }
 
@@ -101,24 +102,24 @@ function createSpeech (text, voice) {
   });
 
   let signed = aws4.sign({
-    path:     '/CreateSpeech', 
-    hostname: 'tts.eu-west-1.ivonacloud.com', 
-    service:  'tts', 
-    method:   'POST', 
-    region:   'eu-west-1', 
+    path:     '/CreateSpeech',
+    hostname: 'tts.eu-west-1.ivonacloud.com',
+    service:  'tts',
+    method:   'POST',
+    region:   'eu-west-1',
     headers:  {
       'Content-Type': 'application/json'
-    }, 
+    },
     body
   }, apiKeys);
 
   // Озвучиваем текст
   return prequest.post({
-    uri: 'https://tts.eu-west-1.ivonacloud.com/CreateSpeech', 
-    headers: signed.headers, 
+    uri: 'https://tts.eu-west-1.ivonacloud.com/CreateSpeech',
+    headers: signed.headers,
 
     // Кодировка null обязательна, т.к. работаем с бинарным контентом
-    encoding: null, 
+    encoding: null,
     body
   });
 }
@@ -135,13 +136,16 @@ function run (arg, callback) {
   let argObj    = arg.source;
   let VK        = argObj._vkapi;
 
+  // Ensure we don't have any QUOT QUOT and other html entities
+  argText = htmlent.decode(argText);
+
   let gender = 'male';
   let lang   = 'ru';
   let title  = 'Recorded at ' + getRecordDate();
   let limit  = argObj.permissionsMask >= 3 ? MAX_LENGTH_PRO : MAX_LENGTH;
 
   // Текст для озвучки не задан, либо длина текста маленькая
-  if (argText === null || argText && argText.length < MIN_LENGTH) 
+  if (argText === null || argText && argText.length < MIN_LENGTH)
     return callback(null);
 
   // Озвучка женским голосом
@@ -154,7 +158,7 @@ function run (arg, callback) {
   argText = argText.replace(/<br>/g, ' ').slice(0, limit);
 
   // В тексте русских символов меньше 50%? Озвучиваем английским голосом
-  if (!detectRULang(argText)) 
+  if (!detectRULang(argText))
     lang = 'en';
 
   // Озвучиваем текст
@@ -165,12 +169,12 @@ function run (arg, callback) {
       return VK.upload('document', {
         // Данные для загрузки
         data: {
-          value: audioBuffer, 
+          value: audioBuffer,
           options: {
-            filename: `file_${Date.now()}.mp3`, 
+            filename: `file_${Date.now()}.mp3`,
             contentType: 'audio/mpeg'
           }
-        }, 
+        },
 
         beforeUpload: {
           type: 'audio_message'
@@ -190,13 +194,13 @@ function run (arg, callback) {
 }
 
 module.exports = {
-  enabled: true, 
-  unique:  false, 
-  mask: 0, 
+  enabled: true,
+  unique:  false,
+  mask: 0,
 
-  aliases:     ['скажи', 'пиздани', 'смолви', 'прочитай'], 
-  description: `Озвучивает указанный текст.\nДлина текста: от ${MIN_LENGTH} до ${MAX_LENGTH} (до ${MAX_LENGTH_PRO} для VIPов) символов.`, 
-  use: `/tts [${DEFAULTS.femaleSwitchers.join(' | ')}] <текст>`, 
+  aliases:     ['скажи', 'пиздани', 'смолви', 'прочитай'],
+  description: `Озвучивает указанный текст.\nДлина текста: от ${MIN_LENGTH} до ${MAX_LENGTH} (до ${MAX_LENGTH_PRO} для VIPов) символов.`,
+  use: `/tts [${DEFAULTS.femaleSwitchers.join(' | ')}] <текст>`,
 
   run
 }

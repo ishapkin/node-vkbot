@@ -52,7 +52,8 @@ function run (arg, callback) {
         yars_plugin.recognize(tmpfile).then((response) => {
           fs.unlink(tmpfile, function() {});
           if (response.errors === null) {
-            callback(null, response.response);
+            let censored = String(response.response).replace( /\<censored\>/i, '*ПииП*');
+            callback(null, censored);
           }
           else {
             callback(null, 'Произошла ошибка :(');

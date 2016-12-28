@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "async": "^2.0.0-rc.3",
+    "htmlentities": "*",
     "aws4": "^1.4.1",
     "cheerio": "^0.20.0",
     "node-json-db": "^0.7.3",
